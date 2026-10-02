@@ -251,7 +251,7 @@ export default function HomePage() {
               </button>
               <h2 className="mb-4 mt-8 text-xl font-bold">{t.examples}</h2>
               <div className="space-y-3">
-                {PREPARED_CASES.map((item) => <button key={item.id} type="button" onClick={() => loadExample(item)} className="block min-h-[72px] w-full rounded-xl border border-line bg-white px-5 py-4 text-start hover:border-accent">
+                {PREPARED_CASES.map((item) => <button key={item.id} type="button" onClick={() => loadExample(item)} className="example-button block min-h-[72px] w-full rounded-xl border border-line bg-white px-5 py-4 text-start hover:border-accent">
                   <span className="block font-bold">{item.id === "salary-role" ? t.salaryCase : item.id === "matching" ? t.matchingCase : t.hoursCase}</span><span className="mt-2 block leading-relaxed text-muted">{item.id === "salary-role" ? t.salaryDescription : item.id === "matching" ? t.matchingDescription : t.hoursDescription}</span>
                 </button>)}
               </div>

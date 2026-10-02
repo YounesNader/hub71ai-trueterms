@@ -5,13 +5,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: "#faf9f6",
-        ink: "#24342f",
-        muted: "#52635b",
-        line: "#cbd3cd",
-        accent: "#14635b",
-        "accent-hover": "#104f49",
-        "accent-soft": "#eaf3ef",
+        paper: "var(--paper)",
+        ink: "var(--ink)",
+        muted: "var(--muted)",
+        line: "var(--line)",
+        accent: "var(--primary)",
+        "accent-hover": "var(--primary-hover)",
+        "accent-soft": "var(--primary-soft)",
       },
       fontFamily: {
         sans: ["Verdana", "sans-serif"],
