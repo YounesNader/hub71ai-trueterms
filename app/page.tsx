@@ -4,7 +4,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { compareExtractions, type ComparisonResult } from "@/lib/compareExtractions";
 import { isExtraction, MAX_IMAGE_BYTES, type Extraction } from "@/lib/extraction";
 import { SAMPLE_CONTRACT, SAMPLE_OFFER } from "@/lib/sampleExtractions";
-import { FIELD_LABELS } from "@/lib/fieldLabels";
+import { ComparisonCards } from "./ComparisonCards";
 import { generatedDate } from "@/lib/evidence";
 import type { Language } from "@/lib/languages";
 import { LocalSummary } from "./LocalSummary";
@@ -229,37 +229,7 @@ export default function HomePage() {
             <p className="mt-3 text-muted">Generated on {date}</p>
             <p className="mt-4 leading-relaxed"><strong>{comparison?.different_count ?? 0} differences found.</strong> A term marked Different means this is different from your offer.</p>
             <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
-            <div className="mt-8">
-              <table className="w-full table-fixed border-collapse text-left text-base">
-                <caption className="mb-4 text-left font-bold">Comparison results</caption>
-                <thead className="sr-only sm:not-sr-only sm:table-header-group">
-                  <tr className="border-b border-line">
-                    <th scope="col" className="py-4 pr-3">Term</th>
-                    <th scope="col" className="px-3 py-4">Job offer</th>
-                    <th scope="col" className="px-3 py-4">Contract</th>
-                    <th scope="col" className="py-4 pl-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="block sm:table-row-group">
-                  {comparison?.rows.map((row) => (
-                    <tr key={row.field} className={`grid grid-cols-2 gap-4 border-b border-line py-5 sm:table-row ${row.status === "different" ? "bg-accent-soft" : ""}`}>
-                      <th scope="row" className="col-span-2 block break-words px-3 text-left sm:table-cell sm:py-5">{FIELD_LABELS[row.field]}</th>
-                      <td className="block break-words px-3 align-top sm:table-cell sm:py-5">
-                        <span aria-hidden="true" className="mb-2 block font-bold sm:hidden">Job offer</span>{row.offer ?? "Not found"}
-                        {row.status === "different" && documents?.offer.source_quotes[row.field] && <blockquote className="mt-3 whitespace-pre-wrap break-words text-muted">{documents.offer.source_quotes[row.field]}</blockquote>}
-                      </td>
-                      <td className="block break-words px-3 align-top sm:table-cell sm:py-5">
-                        <span aria-hidden="true" className="mb-2 block font-bold sm:hidden">Contract</span>{row.contract ?? "Not found"}
-                        {row.status === "different" && documents?.contract.source_quotes[row.field] && <blockquote className="mt-3 whitespace-pre-wrap break-words text-muted">{documents.contract.source_quotes[row.field]}</blockquote>}
-                      </td>
-                      <td className={`col-span-2 block px-3 align-top sm:table-cell sm:py-5 ${row.status === "different" ? "font-bold text-accent" : "text-muted"}`}>
-                        <span aria-hidden="true" className="sm:hidden">Status: </span>{row.status === "different" ? "Different" : row.status === "same" ? "Same" : "Not found"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} />}
             {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample} />}
             <button type="button" onClick={() => moveTo("upload")} className="secondary-button mt-8 w-full sm:w-auto">Back</button>
           </section>
