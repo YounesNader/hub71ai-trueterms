@@ -275,3 +275,8 @@ input[type="file"]:focus-visible + p { outline: 3px solid var(--primary); }
   .home-state > button { justify-self: start; }
   .home-diagram-wrap { grid-column: 2; grid-row: 1 / span 3; align-self: center; margin-top: 0; }
 }
+
+.screen-layout[data-screen="home"] main { flex: 0 0 auto; padding-bottom: 18px; }
+.screen-layout[data-screen="home"] footer { margin-top: 18px; padding-block: 24px; }
+.home-state > .primary-button { margin-top: 24px; }
+@media (max-width: 899px) { .home-diagram-wrap { margin-top: 28px; } }

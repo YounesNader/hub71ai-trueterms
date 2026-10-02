@@ -81,8 +81,9 @@ test("rule card, routing result and bring list are present without disclosure co
   const html = renderToStaticMarkup(React.createElement(ResultsAuthority, {
     content: authorityFixture, selectedId: null, onSelect: () => {},
   }));
-  for (const text of [authorityFixture.ruleCard.text, authorityFixture.ruleCard.source,
+  for (const text of [authorityFixture.ruleCard.text,
     authorityFixture.fallbackRoutingResult, ...authorityFixture.whatToBring]) assert.ok(html.includes(text));
+  assert.ok(!html.includes(authorityFixture.ruleCard.source));
   assert.doesNotMatch(html, /<details|<summary|hidden=/);
   assert.equal(routingResult(authorityFixture, null), authorityFixture.fallbackRoutingResult);
   assert.equal(routingResult(authorityFixture, "fixture"), authorityFixture.routingOptions[0].result);

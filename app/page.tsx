@@ -223,7 +223,7 @@ export default function HomePage() {
 
   return (
     <>
-    <div dir={language === "Urdu" ? "rtl" : "ltr"} lang={LANGUAGES.find((item) => item.name === language)?.code} className="screen-layout flex min-h-screen flex-col pt-[132px] sm:pt-[86px]">
+    <div data-screen={screen} dir={language === "Urdu" ? "rtl" : "ltr"} lang={LANGUAGES.find((item) => item.name === language)?.code} className="screen-layout flex min-h-screen flex-col pt-[132px] sm:pt-[86px]">
       <header className="top-bar">
         <div className="top-bar-inner">
           <div className="flex items-center gap-3"><button type="button" className="brand-button" onClick={() => { cancelCheck(); moveTo("home"); }}>TrueTerms</button>

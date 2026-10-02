@@ -14,7 +14,6 @@ export function ResultsAuthority({ content, selectedId, onSelect, language = "En
       <section aria-labelledby="rule-card-heading" className="mt-10 border-t border-line pt-8">
         <h2 id="rule-card-heading" className="text-xl font-bold">{t.rule}</h2>
         <p className="mt-4 whitespace-pre-wrap leading-relaxed">{language !== "English" && <span className="mb-3 block text-lg">{t.footer}</span>}<span lang="en" dir="ltr" className="block text-base">{content.ruleCard.text}</span></p>
-        <p className="mt-4 whitespace-pre-wrap leading-relaxed text-muted">{language !== "English" && <span className="mb-3 block">{t.source}</span>}<span lang="en" dir="ltr" className="block text-base">{content.ruleCard.source}</span></p>
       </section>
       <section aria-labelledby="routing-heading" className="mt-10 border-t border-line pt-8">
         <h2 id="routing-heading" className="text-xl font-bold">{t.help}</h2>
