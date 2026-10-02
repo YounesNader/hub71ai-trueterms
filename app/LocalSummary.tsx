@@ -11,7 +11,7 @@ export function LocalSummary({ comparison, language, usingSample }: { comparison
       <div lang={LANGUAGE_CODES[language]} dir={language === "Urdu" ? "rtl" : "ltr"} className="my-5 space-y-4 break-words leading-relaxed">
         {paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
       </div>
-      <ListenButton key={language + String(usingSample)} text={paragraphs.join("\n\n")} language={language} usingSample={usingSample} />
+      <ListenButton key={language + String(usingSample)} text={paragraphs.join("\n\n")} englishText={buildLocalSummary(comparison, "English").join("\n\n")} language={language} usingSample={usingSample} />
     </section>
   );
 }

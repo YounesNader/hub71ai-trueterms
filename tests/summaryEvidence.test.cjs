@@ -35,7 +35,7 @@ test("Urdu summary container is RTL; other languages are LTR", () => {
   for (const language of ["English", "Urdu", "Hindi", "Bengali"]) {
     const html = renderToStaticMarkup(React.createElement(LocalSummary, { comparison, language, usingSample: true }));
     assert.ok(html.includes(`dir="${language === "Urdu" ? "rtl" : "ltr"}"`));
-    assert.ok(html.includes("Listen"));
+    assert.ok(html.includes("installed language or English voice"));
   }
 });
 

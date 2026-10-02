@@ -25,22 +25,30 @@ const LABELS: Record<Language, Record<ComparisonField, string>> = {
 const COPY = {
   English: {
     count: (n: number) => `${n} differences found between your offer and contract.`,
-    term: (label: string, offer: string, contract: string) => `${label}. Offer: ${offer}. Contract: ${contract}. This is different from your offer.`,
+    matches: "All terms found in both documents match.",
+    term: (label: string, offer: string, contract: string) => `${label}: offer ${offer}; contract ${contract}`,
+    different: "This is different from your offer.",
     missing: (n: number) => `${n} terms were not found in one or both documents.`,
   },
   Urdu: {
     count: (n: number) => `آپ کی پیشکش اور معاہدے میں ${n} فرق ملے۔`,
-    term: (label: string, offer: string, contract: string) => `${label}۔ پیشکش: ${offer}۔ معاہدہ: ${contract}۔ یہ آپ کی پیشکش سے مختلف ہے۔`,
+    matches: "دونوں دستاویزات میں ملنے والی تمام شرائط ایک جیسی ہیں۔",
+    term: (label: string, offer: string, contract: string) => `${label}: پیشکش ${offer}؛ معاہدہ ${contract}`,
+    different: "یہ آپ کی پیشکش سے مختلف ہے۔",
     missing: (n: number) => `${n} شرائط ایک یا دونوں دستاویزات میں نہیں ملیں۔`,
   },
   Hindi: {
     count: (n: number) => `आपके प्रस्ताव और अनुबंध में ${n} अंतर मिले।`,
-    term: (label: string, offer: string, contract: string) => `${label}। प्रस्ताव: ${offer}। अनुबंध: ${contract}। यह आपके प्रस्ताव से अलग है।`,
+    matches: "दोनों दस्तावेज़ों में मिली सभी शर्तें एक जैसी हैं।",
+    term: (label: string, offer: string, contract: string) => `${label}: प्रस्ताव ${offer}; अनुबंध ${contract}`,
+    different: "यह आपके प्रस्ताव से अलग है।",
     missing: (n: number) => `${n} शर्तें एक या दोनों दस्तावेज़ों में नहीं मिलीं।`,
   },
   Bengali: {
     count: (n: number) => `আপনার প্রস্তাব ও চুক্তিতে ${n}টি পার্থক্য পাওয়া গেছে।`,
-    term: (label: string, offer: string, contract: string) => `${label}। প্রস্তাব: ${offer}। চুক্তি: ${contract}। এটি আপনার প্রস্তাব থেকে আলাদা।`,
+    matches: "উভয় নথিতে পাওয়া সব শর্ত একই।",
+    term: (label: string, offer: string, contract: string) => `${label}: প্রস্তাব ${offer}; চুক্তি ${contract}`,
+    different: "এটি আপনার প্রস্তাব থেকে আলাদা।",
     missing: (n: number) => `${n}টি শর্ত একটি বা উভয় নথিতে পাওয়া যায়নি।`,
   },
 };
@@ -50,9 +58,12 @@ export function buildLocalSummary(comparison: ComparisonResult, language: Langua
   const copy = COPY[language];
   const different = comparison.rows.filter((row) => row.status === "different");
   const missing = comparison.rows.filter((row) => row.status === "not found").length;
+  const same = comparison.rows.some((row) => row.status === "same");
+  const ending = language === "English" ? "." : language === "Urdu" ? "۔" : "।";
+  // At most four template sentences, even when many fields differ.
   return [
-    copy.count(different.length),
-    ...different.map((row) => copy.term(LABELS[language][row.field], String(row.offer), String(row.contract))),
+    different.length === 0 && same ? copy.matches : copy.count(different.length),
+    ...(different.length ? [different.map((row) => copy.term(LABELS[language][row.field], String(row.offer), String(row.contract))).join("; ") + ending, copy.different] : []),
     ...(missing ? [copy.missing(missing)] : []),
   ];
 }

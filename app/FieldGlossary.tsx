@@ -13,7 +13,7 @@ export function FieldGlossary({ field, language, usingSample }: { field: Compari
       <p lang={code} dir={code === "ur" ? "rtl" : "ltr"} className="mt-3 leading-relaxed">{entry[code]}</p>
       {code !== "en" && <p lang="en" dir="ltr" className="mt-3 leading-relaxed text-muted">{entry.en}</p>}
       <p className="my-4 leading-relaxed text-muted">Translations are drafts and are being reviewed.</p>
-      <ListenButton key={field + code + String(usingSample)} text={entry[code]} language={language} usingSample={usingSample} />
+      <ListenButton key={field + code + String(usingSample)} text={entry[code]} englishText={entry.en} language={language} usingSample={usingSample} />
     </div>
   );
 }
