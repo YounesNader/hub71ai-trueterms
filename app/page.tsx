@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { compareExtractions, type ComparisonResult } from "@/lib/compareExtractions";
 import { COMPARISON_FIELDS, isExtraction, MAX_IMAGE_BYTES, type Extraction } from "@/lib/extraction";
 import { PREPARED_CASES, type PreparedCase } from "@/lib/preparedCases";
@@ -10,10 +10,12 @@ import type { Language } from "@/lib/languages";
 import { LocalSummary } from "./LocalSummary";
 import { hasLiveReading } from "@/lib/apiStatus";
 import type { DeviceReading } from "@/lib/readOnDevice";
-import { AUTHORITY_CONTENT, PROJECT_FOOTER, routingResult } from "@/lib/authorityContent";
+import { AUTHORITY_CONTENT, routingResult } from "@/lib/authorityContent";
 import { ResultsAuthority } from "./ResultsAuthority";
 import { EvidenceSheet } from "./EvidenceSheet";
 import { DocumentImages } from "./DocumentImages";
+
+import { getStrings, translateMessage } from "@/lib/strings";
 
 type Screen = "home" | "upload" | "results";
 
@@ -69,6 +71,12 @@ export default function HomePage() {
   const [authority, setAuthority] = useState<string | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  const t = getStrings(language);
+  useEffect(() => {
+    try { const saved = localStorage.getItem("trueterms-language"); const item = LANGUAGES.find((entry) => entry.code === saved); if (item) setLanguage(item.name); } catch { /* Storage is optional. */ }
+  }, []);
+  function changeLanguage(next: Language) { setLanguage(next); try { localStorage.setItem("trueterms-language", LANGUAGES.find((entry) => entry.name === next)!.code); } catch { /* Storage is optional. */ } }
 
   function moveTo(nextScreen: Screen) {
     setScreen(nextScreen);
@@ -170,57 +178,44 @@ export default function HomePage() {
 
   return (
     <>
-    <div className="screen-layout flex min-h-screen flex-col">
-      <header className="mx-auto w-full max-w-3xl px-6 pb-6 pt-8 sm:px-10 sm:pt-12">
-        <p className="font-display text-2xl font-bold">TrueTerms</p>
-        {readingMode === "offline" && <p className="mt-3 leading-relaxed text-muted">Offline mode: reading done on this device</p>}
+    <div dir={language === "Urdu" ? "rtl" : "ltr"} lang={LANGUAGES.find((item) => item.name === language)?.code} className="screen-layout flex min-h-screen flex-col pt-[132px] sm:pt-[86px]">
+      <header className="top-bar">
+        <div className="top-bar-inner">
+          <div className="flex items-center gap-3"><button type="button" className="brand-button" onClick={() => { cancelCheck(); moveTo("home"); }}>TrueTerms</button>
+          {screen !== "home" && <button type="button" className="top-back" onClick={() => { cancelCheck(); moveTo(screen === "results" ? "upload" : "home"); }}>{t.back}</button>}</div>
+          <nav aria-label={t.language} className="language-switcher">{LANGUAGES.map((item) => <button key={item.code} type="button" lang={item.code} dir={item.code === "ur" ? "rtl" : "ltr"} aria-pressed={language === item.name} onClick={() => changeLanguage(item.name)}>{item.nativeName}</button>)}</nav>
+        </div>
       </header>
-
+      {readingMode === "offline" && <p className="mx-auto w-full max-w-3xl px-6 pt-5 text-muted">{t.offline}</p>}
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-8 sm:px-10 sm:py-12">
         {screen === "home" && (
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">
-              Know what changed in your contract.
+              {t.home}
             </h1>
             <p className="mt-6 max-w-prose leading-relaxed text-muted">
-              Check your signed employment contract against your original job offer.
+              {t.intro}
             </p>
-            <fieldset className="mt-10">
-              <legend className="mb-4 font-bold">Choose your language</legend>
-              <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
-                {LANGUAGES.map((item) => (
-                  <button
-                    key={item.name}
-                    type="button"
-                    aria-pressed={language === item.name}
-                    onClick={() => setLanguage(item.name)}
-                    className={`min-h-[84px] rounded-lg border px-5 py-4 text-left transition-colors ${language === item.name ? "border-accent bg-accent-soft text-accent" : "border-line bg-white hover:border-accent"}`}
-                  >
-                    <span lang={item.code} dir={item.code === "ur" ? "rtl" : "ltr"} className="block text-xl font-bold">{item.nativeName}</span>
-                    {item.name !== "English" && <span className="mt-1 block">{item.name}</span>}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
             <button type="button" onClick={() => moveTo("upload")} className="primary-button mt-8 w-full sm:w-auto">
-              Check my contract
+              {t.start}
             </button>
           </section>
         )}
 
         {screen === "upload" && (
           <section aria-labelledby="screen-heading">
-            <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">Add your documents</h1>
-            <p className="mt-6 leading-relaxed text-muted">Choose a JPG or PNG image for each document, up to 3 MB each.</p>
-            <p className="mt-3 leading-relaxed text-muted">Without a configured reader, clear printed English documents are read on your device. When OpenAI is configured, Check sends the images to OpenAI; device reading is the fallback.</p>
-            <p className="mt-3 text-muted">Selected language: {language}</p>
+            <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">{t.upload}</h1>
+            <p className="mt-6 leading-relaxed text-muted">{t.fileHelp}</p>
+            <p className="mt-3 leading-relaxed text-muted">{t.readerHelp}</p>
+            
             <div className="mt-10 space-y-8">
               {([
-                { field: "jobOffer", label: "Job offer image", file: jobOffer },
-                { field: "contract", label: "Contract image", file: contract },
+                { field: "jobOffer", label: t.offerImage, file: jobOffer },
+                { field: "contract", label: t.contractImage, file: contract },
               ] as const).map(({ field, label, file }) => (
                 <div key={field}>
                   <label htmlFor={field} className="mb-3 block font-bold">{label}</label>
+                  <button type="button" disabled={checking} className="secondary-button" onClick={() => document.getElementById(field)?.click()} aria-label={`${t.chooseFile}: ${label}`}>{t.chooseFile}</button>
                   <input
                     id={field}
                     ref={(input) => {
@@ -231,64 +226,66 @@ export default function HomePage() {
                       }
                     }}
                     type="file"
+                    tabIndex={-1}
                     accept="image/jpeg,image/png,.jpg,.jpeg,.png"
                     onChange={(event) => chooseFile(event, field)}
                     disabled={checking}
                     aria-invalid={Boolean(fileErrors[field])}
                     aria-describedby={fileErrors[field] ? `${field}-error` : undefined}
-                    className="block min-h-[52px] w-full min-w-0 rounded-lg border border-line bg-white p-3 text-base file:mb-2 file:mr-4 file:min-h-[44px] file:rounded-md file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-base file:font-bold file:text-accent hover:file:bg-paper"
+                    className="sr-only"
                   />
-                  {file && <p className="mt-3 break-all text-muted">Selected: {file.name}</p>}
-                  {fileErrors[field] && <p id={`${field}-error`} role="alert" className="mt-3 font-bold">{fileErrors[field]}</p>}
+                  {file && <p className="mt-3 break-all text-muted">{t.selected}: {file.name}</p>}
+                  {fileErrors[field] && <p id={`${field}-error`} role="alert" className="mt-3 font-bold">{translateMessage(fileErrors[field], language)}</p>}
                 </div>
               ))}
             </div>
-            {uploadError && <p role="alert" className="mt-6 font-bold leading-relaxed">{uploadError}</p>}
+            {uploadError && <p role="alert" className="mt-6 font-bold leading-relaxed">{translateMessage(uploadError, language)}</p>}
             <button type="button" onClick={checkDocuments} disabled={!jobOffer || !contract || checking} className="primary-button mt-8 w-full sm:w-auto">
-              {checking ? "Checking documents…" : "Check"}
+              {checking ? t.reading : t.check}
             </button>
-            {checking && <p role="status" className="mt-4 leading-relaxed text-muted">{readingProgress} You can use sample documents at any time.</p>}
+            {checking && <p role="status" className="mt-4 leading-relaxed text-muted">{translateMessage(readingProgress, language)}</p>}
             <div className="mt-10 border-t border-line pt-8">
-              <p className="mb-4 leading-relaxed text-muted">Try a sample comparison without uploading images.</p>
+              <p className="mb-4 leading-relaxed text-muted">{t.sampleIntro}</p>
               <button type="button" className="secondary-button w-full sm:w-auto" onClick={() => loadExample()}>
-                Use sample documents
+                {t.sample}
               </button>
-              <h2 className="mb-4 mt-8 text-xl font-bold">Try an example</h2>
+              <h2 className="mb-4 mt-8 text-xl font-bold">{t.examples}</h2>
               <div className="space-y-3">
-                {PREPARED_CASES.map((item) => <button key={item.id} type="button" onClick={() => loadExample(item)} className="block min-h-[72px] w-full rounded-xl border border-line bg-white px-5 py-4 text-left hover:border-accent">
-                  <span className="block font-bold">{item.name}</span><span className="mt-2 block leading-relaxed text-muted">{item.description}</span>
+                {PREPARED_CASES.map((item) => <button key={item.id} type="button" onClick={() => loadExample(item)} className="block min-h-[72px] w-full rounded-xl border border-line bg-white px-5 py-4 text-start hover:border-accent">
+                  <span className="block font-bold">{item.id === "salary-role" ? t.salaryCase : item.id === "matching" ? t.matchingCase : t.hoursCase}</span><span className="mt-2 block leading-relaxed text-muted">{item.id === "salary-role" ? t.salaryDescription : item.id === "matching" ? t.matchingDescription : t.hoursDescription}</span>
                 </button>)}
               </div>
             </div>
-            <button type="button" onClick={() => { cancelCheck(); moveTo("home"); }} className="secondary-button mt-6 w-full sm:w-auto">Back</button>
+
           </section>
         )}
 
         {screen === "results" && (
           <section aria-labelledby="screen-heading">
-            <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">Your comparison</h1>
-            {usingSample && <p className="mt-6 leading-relaxed text-muted">Sample comparison. These are demonstration documents.</p>}
-            <p className="mt-4 leading-relaxed text-muted">{readingNotice}</p>
+            <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">{t.results}</h1>
+            {usingSample && <p className="mt-6 leading-relaxed text-muted">{t.sampleNotice}</p>}
+            <p className="mt-4 leading-relaxed text-muted">{translateMessage(readingNotice, language)}</p>
             {example && <div className="mt-5 flex flex-wrap gap-4">
-              <a href={example.offerImage} download className="secondary-button">Download sample offer</a>
-              <a href={example.contractImage} download className="secondary-button">Download sample contract</a>
+              <a href={example.offerImage} download className="secondary-button">{t.downloadOffer}</a>
+              <a href={example.contractImage} download className="secondary-button">{t.downloadContract}</a>
             </div>}
-            <p className="mt-3 text-muted">Generated on {date}</p>
-            <p className="mt-4 leading-relaxed"><strong>{comparison?.rows.every((row) => row.status === "not found") ? "No terms could be compared." : `${comparison?.different_count ?? 0} differences found.`}</strong> A term marked Different means this is different from your offer.</p>
-            <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
-            <p className="mt-4 leading-relaxed text-muted">Tap a term name to read what it means.</p>
+            <p className="mt-3 text-muted">{t.generated} <span dir="ltr">{date}</span></p>
+            <p className="mt-4 leading-relaxed"><strong>{comparison?.rows.every((row) => row.status === "not found") ? t.unreadable : t.differences.replace("{n}", String(comparison?.different_count ?? 0))}</strong> {t.differentMeaning}</p>
+            <p className="mt-3 leading-relaxed text-muted">{t.missingMeaning}</p>
+            <p className="mt-4 leading-relaxed text-muted">{t.tapTerm}</p>
             {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample || readingMode !== "live"} />}
             {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample || readingMode !== "live"} />}
-            <ResultsAuthority content={AUTHORITY_CONTENT} selectedId={authority} onSelect={setAuthority} />
-            <button type="button" onClick={() => window.print()} className="primary-button mt-8 w-full sm:w-auto">Print or save my summary</button>
-            {example ? <DocumentImages offer={example.offerImage} contract={example.contractImage} /> : jobOffer && contract ? <DocumentImages offer={jobOffer} contract={contract} /> : null}
-            <button type="button" onClick={() => moveTo("upload")} className="secondary-button mt-8 w-full sm:w-auto">Back</button>
+            <ResultsAuthority language={language} content={AUTHORITY_CONTENT} selectedId={authority} onSelect={setAuthority} />
+            <button type="button" onClick={() => window.print()} className="primary-button mt-8 w-full sm:w-auto">{t.print}</button>
+            {example ? <DocumentImages language={language} offer={example.offerImage} contract={example.contractImage} /> : jobOffer && contract ? <DocumentImages language={language} offer={jobOffer} contract={contract} /> : null}
+
           </section>
         )}
       </main>
 
       <footer className="mx-auto mt-8 w-full max-w-3xl border-t border-line px-6 py-8 sm:px-10">
-        <p className="text-base leading-relaxed text-muted">{PROJECT_FOOTER}</p>
+        <p className="text-base leading-relaxed text-muted">{t.footer}</p>
+      {language !== "English" && <p className="mt-3 leading-relaxed text-muted">{t.draft}</p>}
       </footer>
     </div>
     {screen === "results" && comparison && documents && <EvidenceSheet comparison={comparison} offer={documents.offer} contract={documents.contract} date={date} authorityContent={AUTHORITY_CONTENT} routingResult={routingResult(AUTHORITY_CONTENT, authority)} />}

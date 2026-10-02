@@ -128,3 +128,14 @@
     @apply inline-flex min-h-[52px] items-center justify-center rounded-lg border border-accent px-6 py-3 text-base font-bold text-accent transition-colors hover:bg-accent-soft;
   }
 }
+
+.top-bar { position: fixed; inset: 0 0 auto; z-index: 40; background: var(--primary, #14635b); color: white; box-shadow: 0 2px 8px rgb(0 0 0 / .08); }
+.top-bar-inner { max-width: 1100px; margin: auto; padding: 10px 18px; display: flex; flex-direction: column; gap: 8px; }
+.brand-button { min-height: 44px; font: bold 24px Georgia, serif; }
+.top-back { min-height: 44px; padding: 4px 12px; border: 1px solid currentColor; border-radius: 8px; }
+.language-switcher { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.language-switcher button { min-height: 44px; padding: 4px; border-radius: 6px; border: 1px solid transparent; }
+.language-switcher button[aria-pressed="true"] { background: white; color: var(--primary, #14635b); font-weight: bold; }
+.top-bar :focus-visible { outline-color: white; outline-offset: 2px; }
+input[type="file"]:focus-visible + p { outline: 3px solid var(--primary, #14635b); }
+@media (min-width: 640px) { .top-bar-inner { flex-direction: row; align-items: center; justify-content: space-between; padding: 14px 24px; } .language-switcher { min-width: 360px; } }

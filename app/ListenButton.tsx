@@ -1,4 +1,5 @@
 "use client";
+import { getStrings, translateMessage } from "../lib/strings";
 import { useEffect, useRef, useState } from "react";
 import { LANGUAGE_CODES, type Language } from "../lib/languages";
 
@@ -24,7 +25,7 @@ export function ListenButton({ text, englishText = text, language, usingSample }
     update();
     window.speechSynthesis.addEventListener("voiceschanged", update);
     const timer = window.setTimeout(update, 1500);
-    return () => {
+  return () => {
       window.clearTimeout(timer);
       window.speechSynthesis.removeEventListener("voiceschanged", update);
       window.speechSynthesis.cancel();
@@ -86,12 +87,13 @@ export function ListenButton({ text, englishText = text, language, usingSample }
     }
   }
 
+  const t = getStrings(language);
   return (
     <div>
-      {(!offline || localVoice) && <button type="button" onClick={listen} disabled={loading} className="secondary-button">{loading ? "Preparing audio…" : "Listen"}</button>}
-      <p className="mt-4 text-muted">{offline ? localVoice ? matchingVoice ? "Audio uses an installed device voice; no API calls." : `No installed ${language} voice; Listen reads the English text.` : "No installed language or English voice. The written text is available." : "Audio uses an AI voice when available, with device speech as a fallback."}</p>
-      {notice && <p role="status" className="mt-4 leading-relaxed">{notice}</p>}
-      {audioUrl && <audio ref={audioRef} src={audioUrl} controls preload="none" aria-label={`Audio in ${language}`} className="mt-4 min-h-[54px] w-full" onError={() => { setForceOffline(true); setNotice("Audio could not play. Use an installed voice or read the text."); }} />}
+      {(!offline || localVoice) && <button type="button" onClick={listen} disabled={loading} className="secondary-button">{loading ? t.preparingAudio : t.listen}</button>}
+      <p className="mt-4 text-muted">{offline ? localVoice ? matchingVoice ? t.localAudio : t.englishAudio : t.noAudio : t.liveAudio}</p>
+      {notice && <p role="status" className="mt-4 leading-relaxed">{translateMessage(notice, language)}</p>}
+      {audioUrl && <audio ref={audioRef} src={audioUrl} controls preload="none" aria-label={t.listen} className="mt-4 min-h-[54px] w-full" onError={() => { setForceOffline(true); setNotice("Audio could not play. Use an installed voice or read the text."); }} />}
     </div>
   );
 }

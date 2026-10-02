@@ -5,6 +5,7 @@ const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 const { compareExtractions } = require("../lib/compareExtractions.ts");
 const { SAMPLE_OFFER, SAMPLE_CONTRACT } = require("../lib/sampleExtractions.ts");
+const { getStrings } = require("../lib/strings.ts");
 const { buildLocalSummary } = require("../lib/localSummary.ts");
 const { evidenceRows, generatedDate, EVIDENCE_TITLE, EVIDENCE_DECLARATION } = require("../lib/evidence.ts");
 const { LocalSummary } = require("../app/LocalSummary.tsx");
@@ -35,7 +36,7 @@ test("Urdu summary container is RTL; other languages are LTR", () => {
   for (const language of ["English", "Urdu", "Hindi", "Bengali"]) {
     const html = renderToStaticMarkup(React.createElement(LocalSummary, { comparison, language, usingSample: true }));
     assert.ok(html.includes(`dir="${language === "Urdu" ? "rtl" : "ltr"}"`));
-    assert.ok(html.includes("installed language or English voice"));
+    assert.ok(html.includes(getStrings(language).noAudio));
   }
 });
 

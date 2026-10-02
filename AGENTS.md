@@ -15,10 +15,8 @@ correct authority (MOHRE or ADGM).
    stronger legal claim.
 4. No chat window, no sidebar, no login screen anywhere in this app. Three screens only: Home,
    Upload, Results.
-5. No emojis, no gradients, no purple/indigo-500 default colors, no "AI sparkle" icons anywhere in
-   the UI.
-6. Mobile-first. Base text 18px or larger. Tap targets at least 44px tall. Generous white space.
-   One accent color used sparingly, chosen deliberately, not a framework default.
+5. A small deliberate palette is allowed: one primary colour, one warm colour for 'Different', one calm colour for 'Same', plus neutrals. No emojis, no purple or indigo defaults, no sparkle icons, no glassmorphism, no neon glows.
+6. Mobile-first, 18px+ text, 44px+ tap targets.
 7. The OpenAI API key is read only from a server-side environment variable (OPENAI_API_KEY). It
    must never appear in client-side code, never be sent to the browser, never be committed to any
    file in this repo.
