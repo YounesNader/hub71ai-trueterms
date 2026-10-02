@@ -1,108 +1,17 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
 import type { ComparisonResult } from "../lib/compareExtractions";
 import { LANGUAGE_CODES, type Language } from "../lib/languages";
 import { buildLocalSummary } from "../lib/localSummary";
-
-export function LocalSummary({ comparison, language, usingSample }: {
-  comparison: ComparisonResult;
-  language: Language;
-  usingSample: boolean;
-}) {
+import { ListenButton } from "./ListenButton";
+export function LocalSummary({ comparison, language, usingSample }: { comparison: ComparisonResult; language: Language; usingSample: boolean }) {
   const paragraphs = buildLocalSummary(comparison, language);
-  const text = paragraphs.join("\n\n");
-  const [loading, setLoading] = useState(false);
-  const [audioUrl, setAudioUrl] = useState("");
-  const [audioError, setAudioError] = useState("");
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const requestRef = useRef<AbortController | null>(null);
-  const urlRef = useRef("");
-
-  useEffect(() => () => {
-    requestRef.current?.abort();
-    requestRef.current = null;
-    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-    if (usingSample && "speechSynthesis" in window) window.speechSynthesis.cancel();
-  }, [usingSample]);
-
-  useEffect(() => {
-    if (audioUrl) audioRef.current?.play().catch(() => {
-      setAudioError("Press Play in the audio controls to listen.");
-    });
-  }, [audioUrl]);
-
-  async function listen() {
-    if (loading) return;
-    setAudioError("");
-    if (usingSample) {
-      // Keep every action on the sample path offline: use only installed voices.
-      if (!("speechSynthesis" in window)) {
-        setAudioError("Offline audio is unavailable on this device. You can still read the summary.");
-        return;
-      }
-      const voice = window.speechSynthesis.getVoices().find((item) => item.localService && item.lang.toLowerCase().startsWith(LANGUAGE_CODES[language]));
-      if (!voice) {
-        setAudioError(`No offline ${language} voice is installed on this device. You can still read the summary.`);
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.voice = voice;
-      utterance.lang = LANGUAGE_CODES[language];
-      utterance.rate = 0.9;
-      utterance.onerror = () => setAudioError("Offline audio could not play. You can still read the summary.");
-      window.speechSynthesis.speak(utterance);
-      return;
-    }
-    if (audioUrl) {
-      audioRef.current?.play().catch(() => setAudioError("Press Play in the audio controls to listen."));
-      return;
-    }
-    const controller = new AbortController();
-    requestRef.current = controller;
-    setLoading(true);
-    const timer = window.setTimeout(() => controller.abort(), 50_000);
-    try {
-      const response = await fetch("/api/speak", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, language }),
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        const result = await response.json().catch(() => null);
-        throw new Error(typeof result?.error === "string" ? result.error : "Audio is unavailable. You can still read your summary.");
-      }
-      const audio = await response.blob();
-      if (!audio.type.startsWith("audio/") || !audio.size) throw new Error("Audio is unavailable. Try Listen again.");
-      if (controller.signal.aborted) return;
-      urlRef.current = URL.createObjectURL(audio);
-      setAudioUrl(urlRef.current);
-    } catch (cause) {
-      if (requestRef.current === controller) setAudioError(controller.signal.aborted ? "Audio took too long. Try Listen again." : cause instanceof Error ? cause.message : "Audio is unavailable. You can still read your summary.");
-    } finally {
-      window.clearTimeout(timer);
-      if (requestRef.current === controller) {
-        requestRef.current = null;
-        setLoading(false);
-      }
-    }
-  }
-
   return (
     <section aria-labelledby="local-summary-heading" className="mt-10 border-t border-line pt-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 id="local-summary-heading" className="text-xl font-bold">Summary in {language}</h2>
-        <button type="button" onClick={listen} disabled={loading} className="secondary-button">{loading ? "Preparing audio…" : "Listen"}</button>
-      </div>
-      <div lang={LANGUAGE_CODES[language]} dir={language === "Urdu" ? "rtl" : "ltr"} className="mt-5 space-y-4 break-words leading-relaxed">
+      <h2 id="local-summary-heading" className="text-xl font-bold">Summary in {language}</h2>
+      <div lang={LANGUAGE_CODES[language]} dir={language === "Urdu" ? "rtl" : "ltr"} className="my-5 space-y-4 break-words leading-relaxed">
         {paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
       </div>
-      <p className="mt-4 text-muted">{usingSample ? "Sample audio uses an installed device voice and makes no API calls." : "Audio is generated by an AI voice."}</p>
-      {loading && <p role="status" className="mt-4">Preparing your summary audio.</p>}
-      {audioError && <p role="alert" className="mt-4 font-bold">{audioError}</p>}
-      {audioUrl && <audio ref={audioRef} src={audioUrl} controls preload="none" aria-label={`Summary audio in ${language}`} className="mt-4 min-h-[54px] w-full" onError={() => setAudioError("Audio could not play. You can still read or print your summary.")} />}
+      <ListenButton key={language + String(usingSample)} text={paragraphs.join("\n\n")} language={language} usingSample={usingSample} />
     </section>
   );
 }

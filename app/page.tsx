@@ -229,7 +229,8 @@ export default function HomePage() {
             <p className="mt-3 text-muted">Generated on {date}</p>
             <p className="mt-4 leading-relaxed"><strong>{comparison?.different_count ?? 0} differences found.</strong> A term marked Different means this is different from your offer.</p>
             <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
-            {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} />}
+            <p className="mt-4 leading-relaxed text-muted">Tap a term name to read what it means.</p>
+            {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample} />}
             {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample} />}
             <button type="button" onClick={() => moveTo("upload")} className="secondary-button mt-8 w-full sm:w-auto">Back</button>
           </section>

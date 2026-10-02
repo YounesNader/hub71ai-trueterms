@@ -1,19 +1,28 @@
+"use client";
+import { useState } from "react";
 import type { ComparisonResult } from "../lib/compareExtractions";
-import type { Extraction } from "../lib/extraction";
+import type { ComparisonField, Extraction } from "../lib/extraction";
 import { FIELD_LABELS } from "../lib/fieldLabels";
+import type { Language } from "../lib/languages";
+import { FieldGlossary } from "./FieldGlossary";
 
-export function ComparisonCards({ comparison, offer, contract }: {
+export function ComparisonCards({ comparison, offer, contract, language, usingSample }: {
   comparison: ComparisonResult;
   offer: Extraction;
   contract: Extraction;
+  language: Language;
+  usingSample: boolean;
 }) {
+  const [openField, setOpenField] = useState<ComparisonField | null>(null);
   const rows = [...comparison.rows].sort((a, b) => Number(b.status === "different") - Number(a.status === "different"));
   return (
     <section aria-label="Comparison results" className="mt-8 space-y-6">
       {rows.map((row) => (
         <article key={row.field} data-status={row.status} className="overflow-hidden rounded-xl border border-line bg-white">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
-            <h2 className="text-xl font-bold">{FIELD_LABELS[row.field]}</h2>
+            <h2 className="min-w-0 flex-1 text-xl font-bold">
+              <button type="button" aria-expanded={openField === row.field} aria-controls={openField === row.field ? `meaning-${row.field}` : undefined} onClick={() => setOpenField(openField === row.field ? null : row.field)} className="min-h-[44px] break-words text-left underline decoration-line underline-offset-4 hover:text-accent">{FIELD_LABELS[row.field]}</button>
+            </h2>
             <span className={`rounded-md px-3 py-2 font-bold ${row.status === "different" ? "bg-accent text-white" : "bg-paper text-muted"}`}>
               {row.status === "different" ? "Different" : row.status === "same" ? "Same" : "Not found"}
             </span>
@@ -38,6 +47,7 @@ export function ComparisonCards({ comparison, offer, contract }: {
               ))}
             </div>
           )}
+          {openField === row.field && <FieldGlossary field={row.field} language={language} usingSample={usingSample} />}
         </article>
       ))}
     </section>

@@ -21,6 +21,8 @@ Set `OPENAI_API_KEY` in the server environment before starting the app. For loca
 
 `lib/compareExtractions.ts` compares the nine employment terms. Numbers compare exactly; text is trimmed and lowercased. If either value is null, the status is `not found`. Document type and source quotes are metadata and are excluded from comparison. Results retain the original values and include text status labels alongside the teal highlight.
 
+Results show promised and written values in two adjacent halves per card, with changed terms first. Changed cards show exact extraction quotes where available; absent sample quotes are explicitly labelled unavailable. Tap a term to open its hard-coded glossary meaning from `data/glossary.json`, in the selected language with English beneath it. Glossary translations are labelled as drafts. Glossary and summary audio share `ListenButton`; the sample path uses only installed local voices and no API calls.
+
 ## Summary audio
 
 `POST /api/speak` accepts `{ text, language }`. It uses the server's `OPENAI_API_KEY` with OpenAI speech generation and returns MP3 audio. Results play it through standard HTML audio controls. Audio is kept in browser memory and released when leaving Results; the app does not save it. Missing keys, provider errors, and timeouts leave the written summary available.
