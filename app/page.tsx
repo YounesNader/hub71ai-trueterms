@@ -259,7 +259,6 @@ export default function HomePage() {
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">{t.upload}</h1>
             <div hidden={checking}>
             <p className="mt-6 leading-relaxed text-muted">{t.fileHelp}</p>
-            <p className="mt-3 leading-relaxed text-muted">{t.readerHelp}</p>
             
             <div className="mt-10 space-y-8">
               {([

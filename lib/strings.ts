@@ -3,6 +3,8 @@ import type { ComparisonField } from "./extraction";
 import { FIELD_LABELS } from "./fieldLabels";
 
 const en = {
+  "officialSource": "Official source",
+  "officialInfo": "Shown for information. The app does not decide whether a rule was broken.",
   "sampleLocation": "Mussafah, Abu Dhabi",
   "sampleEmployer": "Al Reef Technical Services LLC, Mussafah, Abu Dhabi",
   "coverage": "Covers Abu Dhabi employers only.",
@@ -91,6 +93,8 @@ const en = {
 };
 
 const ur: Record<keyof typeof en, string> = {
+  "officialSource": "سرکاری ماخذ",
+  "officialInfo": "صرف معلومات کے لیے دکھایا گیا ہے۔ ایپ یہ فیصلہ نہیں کرتی کہ کسی قاعدے کی خلاف ورزی ہوئی ہے یا نہیں۔",
   "sampleLocation": "Mussafah, Abu Dhabi",
   "sampleEmployer": "Al Reef Technical Services LLC, Mussafah, Abu Dhabi",
   "coverage": "صرف Abu Dhabi کے آجروں کے لیے۔",
@@ -179,6 +183,8 @@ const ur: Record<keyof typeof en, string> = {
 };
 
 const hi: Record<keyof typeof en, string> = {
+  "officialSource": "आधिकारिक स्रोत",
+  "officialInfo": "यह केवल जानकारी के लिए दिखाया गया है। ऐप यह तय नहीं करता कि किसी नियम का उल्लंघन हुआ है या नहीं।",
   "sampleLocation": "Mussafah, Abu Dhabi",
   "sampleEmployer": "Al Reef Technical Services LLC, Mussafah, Abu Dhabi",
   "coverage": "केवल Abu Dhabi के नियोक्ताओं के लिए।",
@@ -267,6 +273,8 @@ const hi: Record<keyof typeof en, string> = {
 };
 
 const bn: Record<keyof typeof en, string> = {
+  "officialSource": "সরকারি উৎস",
+  "officialInfo": "এটি শুধু তথ্যের জন্য দেখানো হয়েছে। কোনো নিয়ম ভাঙা হয়েছে কি না অ্যাপ তা নির্ধারণ করে না।",
   "sampleLocation": "Mussafah, Abu Dhabi",
   "sampleEmployer": "Al Reef Technical Services LLC, Mussafah, Abu Dhabi",
   "coverage": "শুধু Abu Dhabi-র নিয়োগকর্তাদের জন্য।",
