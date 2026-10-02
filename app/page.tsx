@@ -8,6 +8,8 @@ import { ComparisonCards } from "./ComparisonCards";
 import { generatedDate } from "@/lib/evidence";
 import type { Language } from "@/lib/languages";
 import { LocalSummary } from "./LocalSummary";
+import { hasLiveReading } from "@/lib/apiStatus";
+import type { DeviceReading } from "@/lib/readOnDevice";
 
 type Screen = "home" | "upload" | "results";
 
@@ -59,6 +61,9 @@ export default function HomePage() {
   const [example, setExample] = useState<PreparedCase | null>(null);
   const [checking, setChecking] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [readingMode, setReadingMode] = useState<"unknown" | "offline" | "live">("unknown");
+  const [readingNotice, setReadingNotice] = useState("");
+  const [readingProgress, setReadingProgress] = useState("");
   const activeRequest = useRef<AbortController | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -92,6 +97,8 @@ export default function HomePage() {
     setComparison(compareExtractions(selected.offer, selected.contract));
     setDocuments({ offer: selected.offer, contract: selected.contract });
     setExample(selected);
+    setReadingMode("offline");
+    setReadingNotice("Prepared example loaded on this device. No OCR or AI call was used.");
     setDate(generatedDate());
     setUsingSample(true);
     moveTo("results");
@@ -108,17 +115,34 @@ export default function HomePage() {
         cancelCheck();
         setUploadError("Checking took too long. Try again or use sample documents.");
       }
-    }, 55_000);
+    }, 60_000);
     try {
-      const images = await Promise.all([readImage(jobOffer), readImage(contract)]);
+      setReadingProgress("Checking which reader is available.");
+      const live = await hasLiveReading(controller.signal);
       if (controller.signal.aborted) return;
-      const [offer, signedContract] = await Promise.all([
-        extractImage(images[0], "offer", controller.signal),
-        extractImage(images[1], "contract", controller.signal),
-      ]);
+      let result: DeviceReading | null = null;
+      if (live) {
+        setReadingMode("live");
+        setReadingProgress("Reading with OpenAI. Device reading is available if it takes too long.");
+        try {
+          const images = await Promise.all([readImage(jobOffer), readImage(contract)]);
+          const liveSignal = AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]);
+          const [offer, signedContract] = await Promise.all([
+            extractImage(images[0], "offer", liveSignal), extractImage(images[1], "contract", liveSignal),
+          ]);
+          result = { offer, contract: signedContract, notice: "Read with OpenAI. Check every value and quote against your documents." };
+        } catch { /* Try device reading when the configured service is unavailable. */ }
+      }
       if (controller.signal.aborted) return;
-      setComparison(compareExtractions(offer, signedContract));
-      setDocuments({ offer, contract: signedContract });
+      if (!result) {
+        setReadingMode("offline");
+        const { readOnDevice } = await import("@/lib/readOnDevice");
+        result = await readOnDevice(jobOffer, contract, controller.signal, setReadingProgress);
+      }
+      if (controller.signal.aborted) return;
+      setComparison(compareExtractions(result.offer, result.contract));
+      setDocuments({ offer: result.offer, contract: result.contract });
+      setReadingNotice(result.notice);
       setDate(generatedDate());
       setUsingSample(false);
       setExample(null);
@@ -141,6 +165,7 @@ export default function HomePage() {
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto w-full max-w-3xl px-6 pb-6 pt-8 sm:px-10 sm:pt-12">
         <p className="font-display text-2xl font-bold">TrueTerms</p>
+        {readingMode === "offline" && <p className="mt-3 leading-relaxed text-muted">Offline mode: reading done on this device</p>}
       </header>
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-8 sm:px-10 sm:py-12">
@@ -179,7 +204,7 @@ export default function HomePage() {
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">Add your documents</h1>
             <p className="mt-6 leading-relaxed text-muted">Choose a JPG or PNG image for each document, up to 3 MB each.</p>
-            <p className="mt-3 leading-relaxed text-muted">When you select Check, both images are sent to OpenAI to read the document terms.</p>
+            <p className="mt-3 leading-relaxed text-muted">Without a configured reader, clear printed English documents are read on your device. When OpenAI is configured, Check sends the images to OpenAI; device reading is the fallback.</p>
             <p className="mt-3 text-muted">Selected language: {language}</p>
             <div className="mt-10 space-y-8">
               {([
@@ -214,7 +239,7 @@ export default function HomePage() {
             <button type="button" onClick={checkDocuments} disabled={!jobOffer || !contract || checking} className="primary-button mt-8 w-full sm:w-auto">
               {checking ? "Checking documents…" : "Check"}
             </button>
-            {checking && <p role="status" className="mt-4 leading-relaxed text-muted">Reading both documents. You can use sample documents at any time.</p>}
+            {checking && <p role="status" className="mt-4 leading-relaxed text-muted">{readingProgress} You can use sample documents at any time.</p>}
             <div className="mt-10 border-t border-line pt-8">
               <p className="mb-4 leading-relaxed text-muted">Try a sample comparison without uploading images.</p>
               <button type="button" className="secondary-button w-full sm:w-auto" onClick={() => loadExample()}>
@@ -235,6 +260,7 @@ export default function HomePage() {
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">Your comparison</h1>
             {usingSample && <p className="mt-6 leading-relaxed text-muted">Sample comparison. These are demonstration documents.</p>}
+            <p className="mt-4 leading-relaxed text-muted">{readingNotice}</p>
             {example && <div className="mt-5 flex flex-wrap gap-4">
               <a href={example.offerImage} download className="secondary-button">Download sample offer</a>
               <a href={example.contractImage} download className="secondary-button">Download sample contract</a>
@@ -243,8 +269,8 @@ export default function HomePage() {
             <p className="mt-4 leading-relaxed"><strong>{comparison?.different_count ?? 0} differences found.</strong> A term marked Different means this is different from your offer.</p>
             <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
             <p className="mt-4 leading-relaxed text-muted">Tap a term name to read what it means.</p>
-            {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample} />}
-            {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample} />}
+            {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample || readingMode !== "live"} />}
+            {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample || readingMode !== "live"} />}
             <button type="button" onClick={() => moveTo("upload")} className="secondary-button mt-8 w-full sm:w-auto">Back</button>
           </section>
         )}
