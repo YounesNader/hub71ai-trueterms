@@ -2,7 +2,7 @@
 
 import { useRef, useState, type ChangeEvent } from "react";
 import { compareExtractions, type ComparisonResult } from "@/lib/compareExtractions";
-import { isExtraction, MAX_IMAGE_BYTES, type Extraction } from "@/lib/extraction";
+import { COMPARISON_FIELDS, isExtraction, MAX_IMAGE_BYTES, type Extraction } from "@/lib/extraction";
 import { PREPARED_CASES, type PreparedCase } from "@/lib/preparedCases";
 import { ComparisonCards } from "./ComparisonCards";
 import { generatedDate } from "@/lib/evidence";
@@ -134,7 +134,9 @@ export default function HomePage() {
           const [offer, signedContract] = await Promise.all([
             extractImage(images[0], "offer", liveSignal), extractImage(images[1], "contract", liveSignal),
           ]);
-          result = { offer, contract: signedContract, notice: "Read with OpenAI. Check every value and quote against your documents." };
+          if (COMPARISON_FIELDS.some((field) => offer[field] !== null && signedContract[field] !== null)) {
+            result = { offer, contract: signedContract, notice: "Read with OpenAI. Check every value and quote against your documents." };
+          }
         } catch { /* Try device reading when the configured service is unavailable. */ }
       }
       if (controller.signal.aborted) return;
@@ -272,7 +274,7 @@ export default function HomePage() {
               <a href={example.contractImage} download className="secondary-button">Download sample contract</a>
             </div>}
             <p className="mt-3 text-muted">Generated on {date}</p>
-            <p className="mt-4 leading-relaxed"><strong>{comparison?.different_count ?? 0} differences found.</strong> A term marked Different means this is different from your offer.</p>
+            <p className="mt-4 leading-relaxed"><strong>{comparison?.rows.every((row) => row.status === "not found") ? "No terms could be compared." : `${comparison?.different_count ?? 0} differences found.`}</strong> A term marked Different means this is different from your offer.</p>
             <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
             <p className="mt-4 leading-relaxed text-muted">Tap a term name to read what it means.</p>
             {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample || readingMode !== "live"} />}

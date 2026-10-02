@@ -31,16 +31,20 @@ export async function readOnDevice(offerFile: File, contractFile: File, signal: 
     const contract = await reader.current.recognize(contractFile);
     const parsedOffer = parseContractText(offer.data.text, "offer");
     const parsedContract = parseContractText(contract.data.text, "contract");
-    const found = Object.keys(parsedOffer.source_quotes).length + Object.keys(parsedContract.source_quotes).length;
+    const offerCount = Object.keys(parsedOffer.source_quotes).length;
+    const contractCount = Object.keys(parsedContract.source_quotes).length;
+    const hasText = offer.data.text.trim() && contract.data.text.trim();
     return { offer: parsedOffer, contract: parsedContract,
-      notice: found ? "Device reading uses printed English labels. Check every value and quote against your documents; OCR can make mistakes." : "No labelled terms could be read. Your results show Not found; try a clearer printed English image or use an example." };
+      notice: !hasText ? "No readable text was found in one or both photos. Try a clearer printed English image or use an example. This is not a matching-contract result."
+        : offerCount || contractCount ? `Device reader found ${offerCount} terms in your offer and ${contractCount} in your contract. Check every value and quote against your documents; OCR can make mistakes.`
+        : "The photos contained readable text, but no supported employment terms were matched. Try another layout or use an example. This is not a matching-contract result." };
   };
   signal.addEventListener("abort", stop, { once: true });
   const timeout = setTimeout(stop, 35_000);
   try {
     return await Promise.race([work(), stopped]);
   } catch {
-    return { offer: emptyExtraction("offer"), contract: emptyExtraction("contract"), notice: "Device reading could not finish. Results show Not found; choose clearer printed English images or use an example." };
+    return { offer: emptyExtraction("offer"), contract: emptyExtraction("contract"), notice: "Device reader could not load or finish. No comparison was made. Try Check again or use an example; the first reader download needs an internet connection." };
   } finally {
     clearTimeout(timeout);
     signal.removeEventListener("abort", stop);
