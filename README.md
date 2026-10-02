@@ -9,13 +9,21 @@ npm ci
 npm run dev
 ```
 
-Open http://localhost:3000. Run `npm run build` for a production build, `npm start` to serve it, and `npm run lint` for lint checks.
+Open http://localhost:3000. Run `npm run build` for a production build, `npm start` to serve it, `npm run lint` for lint checks, and `npm test` for comparison and server route tests.
 
-The single page has Home, Upload, and Results states. Language selection is retained for the next task; the interface copy is currently English. JPG and PNG inputs accept documents locally. **Use sample documents** opens the placeholder results table with hard-coded demo documents and makes no API calls. Live comparison and results rendering will be implemented in the next task.
+The single page has Home, Upload, and Results states. Language selection is retained; the interface copy is currently English. Choose two JPG/PNG images (up to 3 MB each), then select **Check** to extract their terms and compare them. **Use sample documents** makes zero API calls and produces exactly two differences: job title and monthly salary. The sample button also remains available during live checking or after an error.
+
+## Live extraction
+
+Set `OPENAI_API_KEY` in the server environment before starting the app. For local development, an ignored `.env.local` file can hold it. Never use a `NEXT_PUBLIC_` variable for the key, or commit an environment file.
+
+`POST /api/extract` accepts `{ imageBase64, documentType }`, where `documentType` is `offer` or `contract`. `imageBase64` can be raw base64 or a JPG/PNG data URL. The server sends the image to the OpenAI Responses API using `gpt-6-astra` and a strict JSON schema. Missing or unreadable terms are null; `source_quotes` contains exact document text, with empty strings for absent terms. Responses and document data are not logged or cached by the app; the OpenAI request uses `store: false`.
+
+`lib/compareExtractions.ts` compares the nine employment terms. Numbers compare exactly; text is trimmed and lowercased. If either value is null, the status is `not found`. Document type and source quotes are metadata and are excluded from comparison. Results retain the original values and include text status labels alongside the teal highlight.
 
 ## Vercel
 
-`vercel.json` selects the Next.js framework preset, including for the project imported while this repository was empty. Keep the repository root (`./`) and clear any custom build or output overrides if you previously set them. No environment variables are needed for this scaffold.
+`vercel.json` selects the Next.js framework preset, including for the project imported while this repository was empty. Keep the repository root (`./`) and clear any custom build or output overrides if you previously set them. Add `OPENAI_API_KEY` under Vercel project settings → Environment Variables and redeploy to enable live extraction. The sample path works without a key.
 
 ## Impeccable in Codex
 

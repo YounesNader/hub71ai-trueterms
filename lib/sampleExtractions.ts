@@ -1,0 +1,26 @@
+import type { Extraction } from "./extraction";
+
+const common = {
+  employer_name: null,
+  allowances_aed: null,
+  work_location: "Abu Dhabi",
+  weekly_hours: 48,
+  annual_leave_days: 30,
+  contract_duration: null,
+  passport_clause: null,
+  source_quotes: {},
+} as const;
+
+export const SAMPLE_OFFER: Extraction = {
+  ...common,
+  document_type: "offer",
+  job_title: "Electrician",
+  monthly_salary_aed: 2000,
+};
+
+export const SAMPLE_CONTRACT: Extraction = {
+  ...common,
+  document_type: "contract",
+  job_title: "General Helper",
+  monthly_salary_aed: 1200,
+};

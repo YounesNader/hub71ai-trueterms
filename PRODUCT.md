@@ -20,6 +20,8 @@ Show differences from the original offer, explain them in the user's language, a
 
 ## Capabilities and Constraints
 
-The initial scaffold provides language selection, JPG/PNG file inputs, an offline sample path, and an empty results table. Live comparison, translations, rule cards, and authority routing will be implemented in later tasks. No API integration exists in this scaffold.
+The app provides language selection, JPG/PNG file inputs, server-side structured extraction with the OpenAI Responses API, deterministic comparison of nine employment terms, and a results table. Live extraction uses gpt-6-astra and requires OPENAI_API_KEY in the server environment. Translations, rule cards, and authority routing are pending later tasks.
+
+The hard-coded demo offer and contract differ only in job title (Electrician versus General Helper) and monthly salary (AED 2000 versus AED 1200). Weekly hours, annual leave, and work location match. Unspecified terms are null and shown as Not found.
 
 The sample path must work with hard-coded data and zero API calls. No chat, sidebar, or login. Every screen shows the exact footer specified in AGENTS.md.
