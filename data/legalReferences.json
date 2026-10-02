@@ -1,0 +1,64 @@
+{
+  "references": [
+    {
+      "field": "job_title",
+      "id": 2,
+      "term": "Job title or occupation: can the employer assign different work from the contract?",
+      "rule_sentence": "The employer may not assign work fundamentally different from the contract except temporarily for accident prevention/repair, or with the worker’s written agreement.",
+      "law_reference": "Federal Decree-Law No. 33 of 2021, Art. 12; Cabinet Resolution No. 1 of 2022, Art. 13",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1541/download",
+      "page_date": "2021",
+      "status": "CONFIRMED"
+    },
+    {
+      "field": "monthly_salary_aed",
+      "id": 3,
+      "term": "Wage: paying the agreed wage on time; the Wage Protection System.",
+      "rule_sentence": "The employer must pay wages on due dates in the agreed manner, and all establishments must pay through the Wage Protection System or other MOHRE-approved system.",
+      "law_reference": "Federal Decree-Law No. 33 of 2021, Art. 22; Cabinet Resolution No. 1 of 2022, Art. 16",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1541/download",
+      "page_date": "2021",
+      "status": "CONFIRMED"
+    },
+    {
+      "field": "weekly_hours",
+      "id": 5,
+      "term": "Working hours: normal maximum per day and per week.",
+      "rule_sentence": "Normal working hours must not exceed eight hours per day or forty-eight hours per week.",
+      "law_reference": "Federal Decree-Law No. 33 of 2021, Art. 17",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1541/download",
+      "page_date": "2021",
+      "status": "CONFIRMED"
+    },
+    {
+      "field": "annual_leave_days",
+      "id": 8,
+      "term": "Annual leave.",
+      "rule_sentence": "The worker is entitled to annual leave with full pay of not less than 30 days per year of service (or pro-rated for shorter service).",
+      "law_reference": "Federal Decree-Law No. 33 of 2021, Art. 29",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1541/download",
+      "page_date": "2021",
+      "status": "CONFIRMED"
+    },
+    {
+      "field": "contract_duration",
+      "id": 10,
+      "term": "Contract duration and type.",
+      "rule_sentence": "Employment contracts are fixed-term (renewable) and must follow MOHRE-approved templates for the agreed work pattern (full-time, part-time, temporary, flexible, etc.).",
+      "law_reference": "Federal Decree-Law No. 33 of 2021, Art. 8; Cabinet Resolution No. 1 of 2022, Art. 10",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1541/download",
+      "page_date": "2021",
+      "status": "CONFIRMED"
+    },
+    {
+      "field": "passport_clause",
+      "id": 11,
+      "term": "Passport and personal documents: can the employer keep them?",
+      "rule_sentence": "The employer may not withhold the worker’s official documents; documents may be held only as needed for residency procedures and must be returned after issuance.",
+      "law_reference": "Federal Decree-Law No. 33 of 2021, Art. 13(2); MOHRE “Know Your Rights” guide (2024)",
+      "source_url": "https://uaelegislation.gov.ae/en/legislations/1541/download",
+      "page_date": "2021",
+      "status": "CONFIRMED"
+    }
+  ]
+}

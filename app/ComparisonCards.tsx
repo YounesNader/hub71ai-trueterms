@@ -5,6 +5,7 @@ import type { ComparisonResult } from "../lib/compareExtractions";
 import type { ComparisonField, Extraction } from "../lib/extraction";
 import type { Language } from "../lib/languages";
 import { Icon } from "./Icons";
+import legalReferences from "../data/legalReferences.json";
 import { FieldGlossary } from "./FieldGlossary";
 
 export function ComparisonCards({ comparison, offer, contract, language, usingSample }: {
@@ -19,7 +20,9 @@ export function ComparisonCards({ comparison, offer, contract, language, usingSa
   const t = getStrings(language);
   return (
     <section aria-label={t.results} className="mt-8 space-y-6">
-      {rows.map((row, index) => (
+      {rows.map((row, index) => {
+        const reference = legalReferences.references.find((entry) => entry.field === row.field);
+        return (
         <article key={row.field} style={{ "--card-delay": `${Math.min(index, 6) * 45}ms` } as CSSProperties} data-status={row.status} className="comparison-card overflow-hidden">
           <div className="card-heading flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
             <h2 className="min-w-0 flex-1 text-xl font-bold">
@@ -51,8 +54,20 @@ export function ComparisonCards({ comparison, offer, contract, language, usingSa
             </div>
           )}
           {openField === row.field && <FieldGlossary field={row.field} language={language} usingSample={usingSample} />}
+          {row.status === "different" && reference && (
+            <section className="official-reference border-t border-line bg-paper px-5 py-5" aria-labelledby={`official-rule-${row.field}`}>
+              <h3 id={`official-rule-${row.field}`} className="font-bold">{t.officialRule}</h3>
+              <div lang="en" dir="ltr" className="mt-3 break-words text-start leading-relaxed">
+                <p>{reference.rule_sentence}</p>
+                <p className="mt-3 text-muted">{reference.law_reference}</p>
+                <a href={reference.source_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-[44px] items-center rounded-md font-bold text-accent underline underline-offset-4 hover:text-accent-hover">Official source</a>
+                <p className="mt-3 text-muted">Shown for information. The app does not decide whether a rule was broken.</p>
+              </div>
+            </section>
+          )}
         </article>
-      ))}
+      );
+      })}
     </section>
   );
 }

@@ -243,3 +243,5 @@ input[type="file"]:focus-visible + p { outline: 3px solid var(--primary); }
 .field-name span { min-width: 0; overflow-wrap: anywhere; }
 .screen-layout [id], .comparison-card { scroll-margin-top: 140px; }
 @media (min-width: 640px) { .screen-layout [id], .comparison-card { scroll-margin-top: 96px; } }
+
+@media print { .official-reference { display: none !important; } }

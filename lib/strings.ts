@@ -3,6 +3,7 @@ import type { ComparisonField } from "./extraction";
 import { FIELD_LABELS } from "./fieldLabels";
 
 const en = {
+  "officialRule": "What the official rule says",
   "home": "Know what changed in your contract.",
   "intro": "Check your signed employment contract against your original job offer.",
   "start": "Check my contract",
@@ -86,6 +87,7 @@ const en = {
 };
 
 const ur: Record<keyof typeof en, string> = {
+  "officialRule": "سرکاری قاعدہ کیا کہتا ہے",
   "home": "جانیں کہ آپ کے معاہدے میں کیا بدلا ہے۔",
   "intro": "اپنے دستخط شدہ معاہدے کا اصل ملازمت کی پیشکش سے موازنہ کریں۔",
   "start": "میرا معاہدہ چیک کریں",
@@ -169,6 +171,7 @@ const ur: Record<keyof typeof en, string> = {
 };
 
 const hi: Record<keyof typeof en, string> = {
+  "officialRule": "आधिकारिक नियम क्या कहता है",
   "home": "जानें आपके अनुबंध में क्या बदला।",
   "intro": "अपने हस्ताक्षरित अनुबंध की मूल नौकरी प्रस्ताव से तुलना करें।",
   "start": "मेरा अनुबंध जाँचें",
@@ -252,6 +255,7 @@ const hi: Record<keyof typeof en, string> = {
 };
 
 const bn: Record<keyof typeof en, string> = {
+  "officialRule": "সরকারি নিয়ম কী বলে",
   "home": "আপনার চুক্তিতে কী বদলেছে জানুন।",
   "intro": "স্বাক্ষরিত চুক্তির সঙ্গে মূল চাকরির প্রস্তাব তুলনা করুন।",
   "start": "আমার চুক্তি যাচাই করুন",
