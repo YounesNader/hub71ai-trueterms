@@ -19,7 +19,7 @@ export function ResultsAuthority({ content, selectedId, onSelect, language = "En
         <h2 id="routing-heading" className="text-xl font-bold">{t.help}</h2>
         <p className="mt-4 leading-relaxed text-muted">{t.routingNote}</p>
         <fieldset className="routing-question mt-5">
-          <legend className="mb-4 font-bold">{language === "English" ? content.routingQuestion : t.routingQuestion}</legend>
+          <legend className="mb-4 font-bold">{t.routingQuestion}</legend>
           <div className="flex flex-col gap-3">
             {content.routingOptions.map((option) => (
               <button key={option.id} type="button" aria-pressed={selectedId === option.id} onClick={() => onSelect(option.id)}

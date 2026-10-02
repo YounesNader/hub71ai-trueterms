@@ -30,7 +30,7 @@ test("numbers compare exactly, including zero and fractional differences", () =>
 });
 
 test("either null, or both null, is not found", () => {
-  const result = compareExtractions({ ...SAMPLE_OFFER, job_title: null }, { ...SAMPLE_CONTRACT, monthly_salary_aed: null });
+  const result = compareExtractions({ ...SAMPLE_OFFER, job_title: null, employer_name: null }, { ...SAMPLE_CONTRACT, monthly_salary_aed: null, employer_name: null });
   for (const field of ["job_title", "monthly_salary_aed", "employer_name"]) {
     assert.equal(result.rows.find(row => row.field === field).status, "not found");
   }

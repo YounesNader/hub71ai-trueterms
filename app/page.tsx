@@ -226,7 +226,7 @@ export default function HomePage() {
     <div data-screen={screen} dir={language === "Urdu" ? "rtl" : "ltr"} lang={LANGUAGES.find((item) => item.name === language)?.code} className="screen-layout flex min-h-screen flex-col pt-[132px] sm:pt-[86px]">
       <header className="top-bar">
         <div className="top-bar-inner">
-          <div className="flex items-center gap-3"><button type="button" className="brand-button" onClick={() => { cancelCheck(); moveTo("home"); }}>TrueTerms</button>
+          <div className="flex items-center gap-3"><button type="button" className="brand-button" onClick={() => { cancelCheck(); moveTo("home"); }}>TrueTerms</button><span className="city-label" dir="ltr">{t.city}</span>
           {screen !== "home" && <button type="button" className="top-back" onClick={() => { cancelCheck(); moveTo(screen === "results" ? "upload" : "home"); }}>{t.back}</button>}</div>
           <nav aria-label={t.language} className="language-switcher">{LANGUAGES.map((item) => <button key={item.code} type="button" lang={item.code} dir={item.code === "ur" ? "rtl" : "ltr"} aria-pressed={language === item.name} onClick={() => changeLanguage(item.name)}>{item.nativeName}</button>)}</nav>
         </div>
@@ -339,7 +339,7 @@ export default function HomePage() {
       </main>
 
       <footer className="mx-auto mt-8 w-full max-w-3xl border-t border-line px-6 py-8 sm:px-10">
-        <p className="text-base leading-relaxed text-muted">{t.footer}</p>
+        <p className="text-base leading-relaxed text-muted">{t.coverage} {t.footer}</p>
       {language !== "English" && <p className="mt-3 leading-relaxed text-muted">{t.draft}</p>}
       </footer>
     </div>

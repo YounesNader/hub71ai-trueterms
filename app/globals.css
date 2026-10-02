@@ -280,3 +280,6 @@ input[type="file"]:focus-visible + p { outline: 3px solid var(--primary); }
 .screen-layout[data-screen="home"] footer { margin-top: 18px; padding-block: 24px; }
 .home-state > .primary-button { margin-top: 24px; }
 @media (max-width: 899px) { .home-diagram-wrap { margin-top: 28px; } }
+
+.city-label { font-size: 18px; line-height: 1.4; white-space: nowrap; opacity: .8; }
+.home-state h1 { font-size: clamp(30px, 3.8vw, 44px); line-height: 1.15; max-width: 24ch; }
