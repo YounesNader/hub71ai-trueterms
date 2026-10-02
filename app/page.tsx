@@ -2,11 +2,14 @@
 
 import { useRef, useState, type ChangeEvent } from "react";
 import { compareExtractions, type ComparisonResult } from "@/lib/compareExtractions";
-import { isExtraction, MAX_IMAGE_BYTES, type ComparisonField } from "@/lib/extraction";
+import { isExtraction, MAX_IMAGE_BYTES, type Extraction } from "@/lib/extraction";
 import { SAMPLE_CONTRACT, SAMPLE_OFFER } from "@/lib/sampleExtractions";
+import { FIELD_LABELS } from "@/lib/fieldLabels";
+import { generatedDate } from "@/lib/evidence";
+import type { Language } from "@/lib/languages";
+import { LocalSummary } from "./LocalSummary";
 
 type Screen = "home" | "upload" | "results";
-type Language = "English" | "Urdu" | "Hindi" | "Bengali";
 
 const LANGUAGES: { name: Language; nativeName: string; code: string }[] = [
   { name: "English", nativeName: "English", code: "en" },
@@ -14,18 +17,6 @@ const LANGUAGES: { name: Language; nativeName: string; code: string }[] = [
   { name: "Hindi", nativeName: "हिन्दी", code: "hi" },
   { name: "Bengali", nativeName: "বাংলা", code: "bn" },
 ];
-
-const FIELD_LABELS: Record<ComparisonField, string> = {
-  employer_name: "Employer name",
-  job_title: "Job title",
-  monthly_salary_aed: "Monthly salary (AED)",
-  allowances_aed: "Allowances (AED)",
-  work_location: "Work location",
-  weekly_hours: "Weekly hours",
-  annual_leave_days: "Annual leave (days)",
-  contract_duration: "Contract duration",
-  passport_clause: "Passport clause",
-};
 
 function readImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -62,6 +53,8 @@ export default function HomePage() {
   const [contract, setContract] = useState<File | null>(null);
   const [fileErrors, setFileErrors] = useState({ jobOffer: "", contract: "" });
   const [comparison, setComparison] = useState<ComparisonResult | null>(null);
+  const [documents, setDocuments] = useState<{ offer: Extraction; contract: Extraction } | null>(null);
+  const [date, setDate] = useState("");
   const [usingSample, setUsingSample] = useState(false);
   const [checking, setChecking] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -96,6 +89,8 @@ export default function HomePage() {
     cancelCheck();
     setUploadError("");
     setComparison(compareExtractions(SAMPLE_OFFER, SAMPLE_CONTRACT));
+    setDocuments({ offer: SAMPLE_OFFER, contract: SAMPLE_CONTRACT });
+    setDate(generatedDate());
     setUsingSample(true);
     moveTo("results");
   }
@@ -121,6 +116,8 @@ export default function HomePage() {
       ]);
       if (controller.signal.aborted) return;
       setComparison(compareExtractions(offer, signedContract));
+      setDocuments({ offer, contract: signedContract });
+      setDate(generatedDate());
       setUsingSample(false);
       moveTo("results");
     } catch (cause) {
@@ -229,6 +226,7 @@ export default function HomePage() {
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">Your comparison</h1>
             {usingSample && <p className="mt-6 leading-relaxed text-muted">Sample comparison. These are demonstration documents.</p>}
+            <p className="mt-3 text-muted">Generated on {date}</p>
             <p className="mt-4 leading-relaxed"><strong>{comparison?.different_count ?? 0} differences found.</strong> A term marked Different means this is different from your offer.</p>
             <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
             <div className="mt-8">
@@ -246,8 +244,14 @@ export default function HomePage() {
                   {comparison?.rows.map((row) => (
                     <tr key={row.field} className={`grid grid-cols-2 gap-4 border-b border-line py-5 sm:table-row ${row.status === "different" ? "bg-accent-soft" : ""}`}>
                       <th scope="row" className="col-span-2 block break-words px-3 text-left sm:table-cell sm:py-5">{FIELD_LABELS[row.field]}</th>
-                      <td className="block break-words px-3 align-top sm:table-cell sm:py-5"><span aria-hidden="true" className="mb-2 block font-bold sm:hidden">Job offer</span>{row.offer ?? "Not found"}</td>
-                      <td className="block break-words px-3 align-top sm:table-cell sm:py-5"><span aria-hidden="true" className="mb-2 block font-bold sm:hidden">Contract</span>{row.contract ?? "Not found"}</td>
+                      <td className="block break-words px-3 align-top sm:table-cell sm:py-5">
+                        <span aria-hidden="true" className="mb-2 block font-bold sm:hidden">Job offer</span>{row.offer ?? "Not found"}
+                        {row.status === "different" && documents?.offer.source_quotes[row.field] && <blockquote className="mt-3 whitespace-pre-wrap break-words text-muted">{documents.offer.source_quotes[row.field]}</blockquote>}
+                      </td>
+                      <td className="block break-words px-3 align-top sm:table-cell sm:py-5">
+                        <span aria-hidden="true" className="mb-2 block font-bold sm:hidden">Contract</span>{row.contract ?? "Not found"}
+                        {row.status === "different" && documents?.contract.source_quotes[row.field] && <blockquote className="mt-3 whitespace-pre-wrap break-words text-muted">{documents.contract.source_quotes[row.field]}</blockquote>}
+                      </td>
                       <td className={`col-span-2 block px-3 align-top sm:table-cell sm:py-5 ${row.status === "different" ? "font-bold text-accent" : "text-muted"}`}>
                         <span aria-hidden="true" className="sm:hidden">Status: </span>{row.status === "different" ? "Different" : row.status === "same" ? "Same" : "Not found"}
                       </td>
@@ -256,6 +260,7 @@ export default function HomePage() {
                 </tbody>
               </table>
             </div>
+            {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample} />}
             <button type="button" onClick={() => moveTo("upload")} className="secondary-button mt-8 w-full sm:w-auto">Back</button>
           </section>
         )}
