@@ -5,6 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        white: "var(--surface)",
         paper: "var(--paper)",
         ink: "var(--ink)",
         muted: "var(--muted)",

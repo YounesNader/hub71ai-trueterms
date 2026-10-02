@@ -1,6 +1,6 @@
 "use client";
 import { getStrings, getFieldLabels } from "../lib/strings";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import type { ComparisonResult } from "../lib/compareExtractions";
 import type { ComparisonField, Extraction } from "../lib/extraction";
 import type { Language } from "../lib/languages";
@@ -19,8 +19,8 @@ export function ComparisonCards({ comparison, offer, contract, language, usingSa
   const t = getStrings(language);
   return (
     <section aria-label={t.results} className="mt-8 space-y-6">
-      {rows.map((row) => (
-        <article key={row.field} data-status={row.status} className="comparison-card overflow-hidden">
+      {rows.map((row, index) => (
+        <article key={row.field} style={{ "--card-delay": `${Math.min(index, 6) * 45}ms` } as CSSProperties} data-status={row.status} className="comparison-card overflow-hidden">
           <div className="card-heading flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
             <h2 className="min-w-0 flex-1 text-xl font-bold">
               <button type="button" aria-expanded={openField === row.field} aria-controls={openField === row.field ? `meaning-${row.field}` : undefined} onClick={() => setOpenField(openField === row.field ? null : row.field)} className="field-name min-h-[44px] break-words text-start underline decoration-line underline-offset-4 hover:text-accent"><Icon name={row.field} /> <span>{getFieldLabels(language)[row.field]}</span></button>

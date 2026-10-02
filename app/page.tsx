@@ -309,6 +309,7 @@ export default function HomePage() {
         {screen === "results" && (
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">{t.results}</h1>
+            <p className="results-count mt-5 text-xl font-bold">{comparison?.rows.every((row) => row.status === "not found") ? t.unreadable : t.differences.replace("{n}", String(comparison?.different_count ?? 0))}</p>
             {usingSample && <p className="mt-6 leading-relaxed text-muted">{t.sampleNotice}</p>}
             <p className="mt-4 leading-relaxed text-muted">{translateMessage(readingNotice, language)}</p>
             {example && <div className="mt-5 flex flex-wrap gap-4">
@@ -316,7 +317,7 @@ export default function HomePage() {
               <a href={example.contractImage} download className="secondary-button">{t.downloadContract}</a>
             </div>}
             <p className="mt-3 text-muted">{t.generated} <span dir="ltr">{date}</span></p>
-            <p className="mt-4 leading-relaxed"><strong>{comparison?.rows.every((row) => row.status === "not found") ? t.unreadable : t.differences.replace("{n}", String(comparison?.different_count ?? 0))}</strong> {t.differentMeaning}</p>
+            <p className="mt-4 leading-relaxed">{t.differentMeaning}</p>
             <p className="mt-3 leading-relaxed text-muted">{t.missingMeaning}</p>
             <p className="mt-4 leading-relaxed text-muted">{t.tapTerm}</p>
             {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample || readingMode !== "live"} />}

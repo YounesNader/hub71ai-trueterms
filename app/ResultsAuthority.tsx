@@ -35,7 +35,7 @@ export function ResultsAuthority({ content, selectedId, onSelect, language = "En
       <section aria-labelledby="bring-heading" className="mt-10 border-t border-line pt-8">
         <h2 id="bring-heading" className="text-xl font-bold">{t.bring}</h2>
         <p className="mt-4 leading-relaxed text-muted">{t.bringNote}</p>
-        <ul className="mt-4 list-disc space-y-3 pl-6 leading-relaxed">
+        <ul className="mt-4 list-disc space-y-3 ps-6 leading-relaxed">
           {content.whatToBring.map((item, index) => <li key={index}>{language === "English" ? item : item === "Job offer image" ? t.offerImage : item === "Contract image" ? t.contractImage : item}</li>)}
         </ul>
       </section>
