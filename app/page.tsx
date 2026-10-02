@@ -10,6 +10,10 @@ import type { Language } from "@/lib/languages";
 import { LocalSummary } from "./LocalSummary";
 import { hasLiveReading } from "@/lib/apiStatus";
 import type { DeviceReading } from "@/lib/readOnDevice";
+import { AUTHORITY_CONTENT, PROJECT_FOOTER, routingResult } from "@/lib/authorityContent";
+import { ResultsAuthority } from "./ResultsAuthority";
+import { EvidenceSheet } from "./EvidenceSheet";
+import { DocumentImages } from "./DocumentImages";
 
 type Screen = "home" | "upload" | "results";
 
@@ -46,8 +50,6 @@ async function extractImage(imageBase64: string, documentType: "offer" | "contra
   return result;
 }
 
-const FOOTER = "Information only, not legal advice. For help call MOHRE 80084.";
-
 export default function HomePage() {
   const [screen, setScreen] = useState<Screen>("home");
   const [language, setLanguage] = useState<Language>("English");
@@ -64,6 +66,7 @@ export default function HomePage() {
   const [readingMode, setReadingMode] = useState<"unknown" | "offline" | "live">("unknown");
   const [readingNotice, setReadingNotice] = useState("");
   const [readingProgress, setReadingProgress] = useState("");
+  const [authority, setAuthority] = useState<string | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -99,6 +102,7 @@ export default function HomePage() {
     setExample(selected);
     setReadingMode("offline");
     setReadingNotice("Prepared example loaded on this device. No OCR or AI call was used.");
+    setAuthority(null);
     setDate(generatedDate());
     setUsingSample(true);
     moveTo("results");
@@ -143,6 +147,7 @@ export default function HomePage() {
       setComparison(compareExtractions(result.offer, result.contract));
       setDocuments({ offer: result.offer, contract: result.contract });
       setReadingNotice(result.notice);
+      setAuthority(null);
       setDate(generatedDate());
       setUsingSample(false);
       setExample(null);
@@ -162,7 +167,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
+    <div className="screen-layout flex min-h-screen flex-col">
       <header className="mx-auto w-full max-w-3xl px-6 pb-6 pt-8 sm:px-10 sm:pt-12">
         <p className="font-display text-2xl font-bold">TrueTerms</p>
         {readingMode === "offline" && <p className="mt-3 leading-relaxed text-muted">Offline mode: reading done on this device</p>}
@@ -271,14 +277,19 @@ export default function HomePage() {
             <p className="mt-4 leading-relaxed text-muted">Tap a term name to read what it means.</p>
             {comparison && documents && <ComparisonCards comparison={comparison} offer={documents.offer} contract={documents.contract} language={language} usingSample={usingSample || readingMode !== "live"} />}
             {comparison && <LocalSummary comparison={comparison} language={language} usingSample={usingSample || readingMode !== "live"} />}
+            <ResultsAuthority content={AUTHORITY_CONTENT} selectedId={authority} onSelect={setAuthority} />
+            <button type="button" onClick={() => window.print()} className="primary-button mt-8 w-full sm:w-auto">Print or save my summary</button>
+            {example ? <DocumentImages offer={example.offerImage} contract={example.contractImage} /> : jobOffer && contract ? <DocumentImages offer={jobOffer} contract={contract} /> : null}
             <button type="button" onClick={() => moveTo("upload")} className="secondary-button mt-8 w-full sm:w-auto">Back</button>
           </section>
         )}
       </main>
 
       <footer className="mx-auto mt-8 w-full max-w-3xl border-t border-line px-6 py-8 sm:px-10">
-        <p className="text-base leading-relaxed text-muted">{FOOTER}</p>
+        <p className="text-base leading-relaxed text-muted">{PROJECT_FOOTER}</p>
       </footer>
     </div>
+    {screen === "results" && comparison && documents && <EvidenceSheet comparison={comparison} offer={documents.offer} contract={documents.contract} date={date} authorityContent={AUTHORITY_CONTENT} routingResult={routingResult(AUTHORITY_CONTENT, authority)} />}
+    </>
   );
 }

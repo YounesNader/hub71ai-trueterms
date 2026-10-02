@@ -6,6 +6,8 @@ const { PREPARED_CASES } = require("../lib/preparedCases.ts");
 const { compareExtractions } = require("../lib/compareExtractions.ts");
 const { buildLocalSummary } = require("../lib/localSummary.ts");
 const { isExtraction } = require("../lib/extraction.ts");
+const { GET } = require("../app/api/status/route.ts");
+const { AUTHORITY_CONTENT, PROJECT_FOOTER, routingResult } = require("../lib/authorityContent.ts");
 
 test("each printed example parses to its prepared extraction with exact quotes", () => {
   for (const example of PREPARED_CASES) {
@@ -39,4 +41,28 @@ test("template summaries have at most four paragraphs and do not claim missing t
   for (const language of ["English", "Urdu", "Hindi", "Bengali"]) assert.ok(buildLocalSummary(comparison, language).length <= 4);
   const match = PREPARED_CASES[1];
   assert.match(buildLocalSummary(compareExtractions(match.offer, match.contract), "English")[0], /terms found in both documents match/);
+});
+
+test("status exposes only an uncached boolean and changes when the server key is configured", async () => {
+  const saved = process.env.OPENAI_API_KEY;
+  try {
+    delete process.env.OPENAI_API_KEY;
+    const offline = await GET();
+    assert.deepEqual(await offline.json(), { openaiAvailable: false });
+    assert.equal(offline.headers.get("cache-control"), "no-store");
+    process.env.OPENAI_API_KEY = "test-placeholder-not-a-secret";
+    assert.deepEqual(await (await GET()).json(), { openaiAvailable: true });
+  } finally {
+    if (saved === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = saved;
+  }
+});
+
+test("authority content reuses the project disclaimer and returns only worker-selected names", () => {
+  assert.equal(AUTHORITY_CONTENT.ruleCard.text, PROJECT_FOOTER);
+  assert.ok(require("node:fs").readFileSync("AGENTS.md", "utf8").includes(PROJECT_FOOTER));
+  assert.equal(routingResult(AUTHORITY_CONTENT, null), "Other free zone or not sure");
+  assert.equal(routingResult(AUTHORITY_CONTENT, "adgm"), "ADGM");
+  assert.equal(routingResult(AUTHORITY_CONTENT, "mohre"), "MOHRE");
+  assert.deepEqual(AUTHORITY_CONTENT.whatToBring, ["Job offer image", "Contract image"]);
 });

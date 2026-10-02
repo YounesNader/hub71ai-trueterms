@@ -14,6 +14,7 @@ export function ResultsAuthority({ content, selectedId, onSelect }: {
       </section>
       <section aria-labelledby="routing-heading" className="mt-10 border-t border-line pt-8">
         <h2 id="routing-heading" className="text-xl font-bold">Where to get help</h2>
+        <p className="mt-4 leading-relaxed text-muted">You select the authority. TrueTerms does not determine jurisdiction or submit your summary.</p>
         <fieldset className="routing-question mt-5">
           <legend className="mb-4 font-bold">{content.routingQuestion}</legend>
           <div className="flex flex-col gap-3">
@@ -29,6 +30,7 @@ export function ResultsAuthority({ content, selectedId, onSelect }: {
       </section>
       <section aria-labelledby="bring-heading" className="mt-10 border-t border-line pt-8">
         <h2 id="bring-heading" className="text-xl font-bold">What to bring</h2>
+        <p className="mt-4 leading-relaxed text-muted">Documents used in this comparison. This is not an authority checklist.</p>
         <ul className="mt-4 list-disc space-y-3 pl-6 leading-relaxed">
           {content.whatToBring.map((item, index) => <li key={index}>{item}</li>)}
         </ul>

@@ -48,6 +48,7 @@
   }
 
   button,
+  a,
   audio,
   .routing-question {
     display: none !important;

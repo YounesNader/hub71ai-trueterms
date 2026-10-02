@@ -21,17 +21,27 @@ Set `OPENAI_API_KEY` in the server environment before starting the app. For loca
 
 `lib/compareExtractions.ts` compares the nine employment terms. Numbers compare exactly; text is trimmed and lowercased. If either value is null, the status is `not found`. Document type and source quotes are metadata and are excluded from comparison. Results retain the original values and include text status labels alongside the teal highlight.
 
-Results show promised and written values in two adjacent halves per card, with changed terms first. Changed cards show exact extraction quotes where available; absent sample quotes are explicitly labelled unavailable. Tap a term to open its hard-coded glossary meaning from `data/glossary.json`, in the selected language with English beneath it. Glossary translations are labelled as drafts. Glossary and summary audio share `ListenButton`; the sample path uses only installed local voices and no API calls.
+Results show promised and written values in two adjacent halves per card, with changed terms first. Prepared examples include exact lines printed on their clearly labelled demonstration images. OCR quotes are recognised text and must be checked against the image. Tap a term to open its hard-coded glossary meaning from `data/glossary.json`, in the selected language with English beneath it. Glossary translations are labelled as drafts. Glossary and summary audio share `ListenButton`.
 
 ## Summary audio
 
 `POST /api/speak` accepts `{ text, language }`. It uses the server's `OPENAI_API_KEY` with OpenAI speech generation and returns MP3 audio. Results play it through standard HTML audio controls. Audio is kept in browser memory and released when leaving Results; the app does not save it. Missing keys, provider errors, and timeouts leave the written summary available.
 
-Sample-mode Listen uses an installed local device voice only and never calls an API. If no voice exists for the selected language, the page explains that offline audio is unavailable and keeps the summary readable.
+Sample and no-key Listen use installed local device voices only, with no API calls. If the selected language voice is absent, Listen reads the English version using an installed English voice. If neither is available, Listen is hidden and the written text stays visible. Live speech falls back to device speech after a provider error or a 12-second timeout.
 
-## Evidence sheet preparation
+## No-key demo
 
-`EvidenceSheet` and `ResultsAuthority` are prepared components, currently awaiting the project's exact approved rule card, source line, routing question/options/results, and What to bring list. They are not connected to the Results page yet. Production authority wording must be hard-coded verbatim; test fixtures are not authority guidance. Sample extractions currently contain no source quotes, so evidence quote cells remain empty rather than inventing document text. One-page printing must be verified after the approved content is supplied.
+No key is required. Prepared cases (salary/job title changed, matching listed terms, hours/leave changed) load hard-coded data and images instantly, with zero API calls, including status checks. Download the demonstration images from Results to test real uploads.
+
+For real uploads only, one uncached `GET /api/status` reports a boolean capability flag. If a key is configured, existing extraction and speech routes are selected automatically. Failed live extraction falls back after 15 seconds to device OCR. There is no `/api/explain` route; explanations are deterministic templates in four languages, at most four template sentences, regardless of whether a key exists.
+
+English device OCR uses lazy-loaded Tesseract.js with same-origin worker, WebAssembly and language assets copied from npm dependencies during prebuild/predev. No image leaves the device on the no-key path. The initial asset download needs internet; “Offline mode” means local processing, not guaranteed airplane-mode operation. Clear, labelled, printed English is supported; handwriting, unlabeled paragraphs and blurry photos are not reliable. Unreadable or ambiguous fields remain null/Not found. A 35-second OCR limit returns an informative Results screen. No IndexedDB cache, document storage, or database is used.
+
+## Evidence sheet
+
+“Print or save my summary” calls window.print() and shows only the English evidence sheet: date, changed fields/quotes, the existing disclaimer copied verbatim from AGENTS.md rule 8 with its project source, the worker-selected authority (or Other free zone or not sure), the two document labels, and the required declaration. Prepared examples fit one A4 page; long real quotes can require additional pages and are never truncated. Print-dialog headers/footers are controlled by the browser.
+
+The Rule card is existing project guidance, not a verified legal rule. Routing is an explicit worker selection among names already in the repo, not a jurisdiction determination. What to bring contains only the existing Job offer image and Contract image labels, not an authority checklist. The app does not submit the sheet anywhere.
 
 ## Vercel
 
