@@ -245,3 +245,33 @@ input[type="file"]:focus-visible + p { outline: 3px solid var(--primary); }
 @media (min-width: 640px) { .screen-layout [id], .comparison-card { scroll-margin-top: 96px; } }
 
 @media print { .official-reference { display: none !important; } }
+
+/* A quiet document grid sits behind screen content, never over controls or cards. */
+.screen-layout {
+  position: relative;
+  isolation: isolate;
+}
+.screen-layout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .035;
+  background-image: linear-gradient(var(--primary) 1px, transparent 1px), linear-gradient(90deg, var(--primary) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, transparent, black 180px, black 65%, transparent);
+}
+.home-diagram-wrap { margin-top: 42px; max-width: 480px; width: 100%; }
+.home-diagram { display: block; width: 100%; height: auto; color: var(--primary); opacity: .55; }
+.screen-layout[dir="rtl"] .home-diagram { transform: scaleX(-1); }
+.diagram-text-lines { opacity: .42; }
+.diagram-changed-lines { stroke: var(--different); opacity: .8; }
+.diagram-labels { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; text-align: center; font-size: 18px; color: var(--muted); }
+.home-diagram-wrap > p { font-size: 18px; }
+@media (min-width: 900px) {
+  .home-state { display: grid; grid-template-columns: 1.12fr 1fr; column-gap: 42px; align-content: start; }
+  .home-state h1, .home-state > p, .home-state > button { grid-column: 1; }
+  .home-state > button { justify-self: start; }
+  .home-diagram-wrap { grid-column: 2; grid-row: 1 / span 3; align-self: center; margin-top: 0; }
+}

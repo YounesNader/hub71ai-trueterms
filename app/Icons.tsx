@@ -19,3 +19,13 @@ const paths: Record<IconName, string> = {
 export function Icon({ name, className = "" }: { name: IconName; className?: string }) {
  return <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
+
+export function HomeDiagram() {
+ return <svg className="home-diagram" viewBox="0 0 480 210" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+   <path d="M58 22h104l28 28v138H58zM162 22v28h28M290 22h104l28 28v138H290zM394 22v28h28" />
+   <g className="diagram-text-lines"><path d="M80 70h70M80 89h88M80 108h88M80 127h70M80 146h88M80 165h52M312 70h70M312 108h88M312 146h88M312 165h52" /></g>
+   <g className="diagram-changed-lines"><path d="M312 89h88M312 127h70" /><path d="M300 89h1M300 127h1" strokeWidth="5" /></g>
+   <path d="M207 105h65m-9-9 9 9-9 9" strokeDasharray="3 5" />
+   <path d="M220 173h40M229 167l-7 6 7 6m22-12 7 6-7 6" />
+ </svg>;
+}

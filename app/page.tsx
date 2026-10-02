@@ -15,6 +15,7 @@ import { ResultsAuthority } from "./ResultsAuthority";
 import { EvidenceSheet } from "./EvidenceSheet";
 import { ReadingScene } from "./ReadingScene";
 import { DocumentImages } from "./DocumentImages";
+import { HomeDiagram } from "./Icons";
 
 import { getStrings, translateMessage } from "@/lib/strings";
 
@@ -233,7 +234,7 @@ export default function HomePage() {
       {readingMode === "offline" && <p className="mx-auto w-full max-w-3xl px-6 pt-5 text-muted">{t.offline}</p>}
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-8 sm:px-10 sm:py-12">
         {screen === "home" && (
-          <section aria-labelledby="screen-heading">
+          <section aria-labelledby="screen-heading" className="home-state">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">
               {t.home}
             </h1>
@@ -243,6 +244,13 @@ export default function HomePage() {
             <button type="button" onClick={() => moveTo("upload")} className="primary-button mt-8 w-full sm:w-auto">
               {t.start}
             </button>
+            <figure className="home-diagram-wrap">
+              <HomeDiagram />
+              <figcaption className="diagram-labels">
+                <span>{t.yourOffer}</span><span>{t.yourContract}</span>
+              </figcaption>
+              <p className="mt-4 text-center text-muted">{t.promised} / {t.written}</p>
+            </figure>
           </section>
         )}
 
