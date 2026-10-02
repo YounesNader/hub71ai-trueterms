@@ -46,7 +46,7 @@ test("evidence has only differences and preserves exact quotes including whitesp
   assert.equal(rows.length, 2);
   assert.equal(rows[0].offer_quote, "  Electrician\n");
   assert.equal(rows[1].contract_quote, "AED 1200");
-  assert.equal(evidenceRows(comparison, SAMPLE_OFFER, SAMPLE_CONTRACT)[0].offer_quote, "");
+  assert.equal(evidenceRows(comparison, SAMPLE_OFFER, SAMPLE_CONTRACT)[0].offer_quote, "Job title: Electrician");
 });
 
 test("evidence renders in English with fixed content in the requested order and no controls", () => {

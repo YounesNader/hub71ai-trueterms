@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { compareExtractions, type ComparisonResult } from "@/lib/compareExtractions";
 import { isExtraction, MAX_IMAGE_BYTES, type Extraction } from "@/lib/extraction";
-import { SAMPLE_CONTRACT, SAMPLE_OFFER } from "@/lib/sampleExtractions";
+import { PREPARED_CASES, type PreparedCase } from "@/lib/preparedCases";
 import { ComparisonCards } from "./ComparisonCards";
 import { generatedDate } from "@/lib/evidence";
 import type { Language } from "@/lib/languages";
@@ -56,6 +56,7 @@ export default function HomePage() {
   const [documents, setDocuments] = useState<{ offer: Extraction; contract: Extraction } | null>(null);
   const [date, setDate] = useState("");
   const [usingSample, setUsingSample] = useState(false);
+  const [example, setExample] = useState<PreparedCase | null>(null);
   const [checking, setChecking] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const activeRequest = useRef<AbortController | null>(null);
@@ -85,11 +86,12 @@ export default function HomePage() {
     setChecking(false);
   }
 
-  function useSamples() {
+  function loadExample(selected: PreparedCase = PREPARED_CASES[0]) {
     cancelCheck();
     setUploadError("");
-    setComparison(compareExtractions(SAMPLE_OFFER, SAMPLE_CONTRACT));
-    setDocuments({ offer: SAMPLE_OFFER, contract: SAMPLE_CONTRACT });
+    setComparison(compareExtractions(selected.offer, selected.contract));
+    setDocuments({ offer: selected.offer, contract: selected.contract });
+    setExample(selected);
     setDate(generatedDate());
     setUsingSample(true);
     moveTo("results");
@@ -119,6 +121,7 @@ export default function HomePage() {
       setDocuments({ offer, contract: signedContract });
       setDate(generatedDate());
       setUsingSample(false);
+      setExample(null);
       moveTo("results");
     } catch (cause) {
       if (!controller.signal.aborted) {
@@ -214,9 +217,15 @@ export default function HomePage() {
             {checking && <p role="status" className="mt-4 leading-relaxed text-muted">Reading both documents. You can use sample documents at any time.</p>}
             <div className="mt-10 border-t border-line pt-8">
               <p className="mb-4 leading-relaxed text-muted">Try a sample comparison without uploading images.</p>
-              <button type="button" className="secondary-button w-full sm:w-auto" onClick={useSamples}>
+              <button type="button" className="secondary-button w-full sm:w-auto" onClick={() => loadExample()}>
                 Use sample documents
               </button>
+              <h2 className="mb-4 mt-8 text-xl font-bold">Try an example</h2>
+              <div className="space-y-3">
+                {PREPARED_CASES.map((item) => <button key={item.id} type="button" onClick={() => loadExample(item)} className="block min-h-[72px] w-full rounded-xl border border-line bg-white px-5 py-4 text-left hover:border-accent">
+                  <span className="block font-bold">{item.name}</span><span className="mt-2 block leading-relaxed text-muted">{item.description}</span>
+                </button>)}
+              </div>
             </div>
             <button type="button" onClick={() => { cancelCheck(); moveTo("home"); }} className="secondary-button mt-6 w-full sm:w-auto">Back</button>
           </section>
@@ -226,6 +235,10 @@ export default function HomePage() {
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">Your comparison</h1>
             {usingSample && <p className="mt-6 leading-relaxed text-muted">Sample comparison. These are demonstration documents.</p>}
+            {example && <div className="mt-5 flex flex-wrap gap-4">
+              <a href={example.offerImage} download className="secondary-button">Download sample offer</a>
+              <a href={example.contractImage} download className="secondary-button">Download sample contract</a>
+            </div>}
             <p className="mt-3 text-muted">Generated on {date}</p>
             <p className="mt-4 leading-relaxed"><strong>{comparison?.different_count ?? 0} differences found.</strong> A term marked Different means this is different from your offer.</p>
             <p className="mt-3 leading-relaxed text-muted">Not found means the term was missing or could not be read in one or both documents.</p>
