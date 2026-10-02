@@ -13,9 +13,20 @@ import type { DeviceReading } from "@/lib/readOnDevice";
 import { AUTHORITY_CONTENT, routingResult } from "@/lib/authorityContent";
 import { ResultsAuthority } from "./ResultsAuthority";
 import { EvidenceSheet } from "./EvidenceSheet";
+import { ReadingScene } from "./ReadingScene";
 import { DocumentImages } from "./DocumentImages";
 
 import { getStrings, translateMessage } from "@/lib/strings";
+
+function readingPause(milliseconds: number, signal: AbortSignal): Promise<boolean> {
+  if (signal.aborted) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const finish = (ok: boolean) => { clearTimeout(timer); signal.removeEventListener("abort", stopped); resolve(ok); };
+    const stopped = () => finish(false);
+    const timer = setTimeout(() => finish(true), milliseconds);
+    signal.addEventListener("abort", stopped, { once: true });
+  });
+}
 
 type Screen = "home" | "upload" | "results";
 
@@ -67,7 +78,7 @@ export default function HomePage() {
   const [uploadError, setUploadError] = useState("");
   const [readingMode, setReadingMode] = useState<"unknown" | "offline" | "live">("unknown");
   const [readingNotice, setReadingNotice] = useState("");
-  const [readingProgress, setReadingProgress] = useState("");
+  const [readingPhase, setReadingPhase] = useState(0);
   const [authority, setAuthority] = useState<string | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -102,8 +113,25 @@ export default function HomePage() {
     setChecking(false);
   }
 
-  function loadExample(selected: PreparedCase = PREPARED_CASES[0]) {
+  async function loadExample(selected: PreparedCase = PREPARED_CASES[0]) {
     cancelCheck();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setChecking(true);
+    setReadingMode("offline");
+    setReadingPhase(0);
+    setUploadError("");
+    moveTo("upload");
+    // Prepared data is read locally; these short stages make the demo transition legible.
+    if (!await readingPause(500, controller.signal)) return;
+    setReadingPhase(1);
+    if (!await readingPause(500, controller.signal)) return;
+    setReadingPhase(2);
+    if (!await readingPause(300, controller.signal)) return;
+    setReadingPhase(3);
+    if (!await readingPause(200, controller.signal)) return;
+    activeRequest.current = null;
+    setChecking(false);
     setUploadError("");
     setComparison(compareExtractions(selected.offer, selected.contract));
     setDocuments({ offer: selected.offer, contract: selected.contract });
@@ -121,26 +149,32 @@ export default function HomePage() {
     const controller = new AbortController();
     activeRequest.current = controller;
     setChecking(true);
+    setReadingPhase(0);
+    const startedAt = performance.now();
     setUploadError("");
     const timeout = window.setTimeout(() => {
       if (activeRequest.current === controller) {
         cancelCheck();
         setUploadError("Checking took too long. Try again or use sample documents.");
       }
-    }, 60_000);
+    }, 20_000);
     try {
-      setReadingProgress("Checking which reader is available.");
+      setReadingPhase(0);
       const live = await hasLiveReading(controller.signal);
       if (controller.signal.aborted) return;
       let result: DeviceReading | null = null;
       if (live) {
         setReadingMode("live");
-        setReadingProgress("Reading with OpenAI. Device reading is available if it takes too long.");
+        setReadingPhase(0);
         try {
           const images = await Promise.all([readImage(jobOffer), readImage(contract)]);
           const liveSignal = AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]);
+          let offerFinished = false;
+          let contractFinished = false;
+          const updatePhase = () => { if (!controller.signal.aborted) setReadingPhase(offerFinished && contractFinished ? 2 : offerFinished ? 1 : 0); };
           const [offer, signedContract] = await Promise.all([
-            extractImage(images[0], "offer", liveSignal), extractImage(images[1], "contract", liveSignal),
+            extractImage(images[0], "offer", liveSignal).then((value) => { offerFinished = true; updatePhase(); return value; }),
+            extractImage(images[1], "contract", liveSignal).then((value) => { contractFinished = true; updatePhase(); return value; }),
           ]);
           if (COMPARISON_FIELDS.some((field) => offer[field] !== null && signedContract[field] !== null)) {
             result = { offer, contract: signedContract, notice: "Read with OpenAI. Check every value and quote against your documents." };
@@ -151,10 +185,20 @@ export default function HomePage() {
       if (!result) {
         setReadingMode("offline");
         const { readOnDevice } = await import("@/lib/readOnDevice");
-        result = await readOnDevice(jobOffer, contract, controller.signal, setReadingProgress);
+        setReadingPhase(0);
+        result = await readOnDevice(jobOffer, contract, controller.signal, (message) => {
+          if (!controller.signal.aborted) setReadingPhase(message.startsWith("Reading your contract") ? 1 : 0);
+        });
+        if (result.notice.startsWith("Device reader could not")) throw new Error(result.notice);
+        if (controller.signal.aborted) return;
+        setReadingPhase(2);
+        if (!await readingPause(Math.max(0, 1300 - (performance.now() - startedAt)), controller.signal)) return;
       }
       if (controller.signal.aborted) return;
-      setComparison(compareExtractions(result.offer, result.contract));
+      const checked = compareExtractions(result.offer, result.contract);
+      setReadingPhase(3);
+      if (!await readingPause(200, controller.signal)) return;
+      setComparison(checked);
       setDocuments({ offer: result.offer, contract: result.contract });
       setReadingNotice(result.notice);
       setAuthority(null);
@@ -205,6 +249,7 @@ export default function HomePage() {
         {screen === "upload" && (
           <section aria-labelledby="screen-heading">
             <h1 id="screen-heading" ref={headingRef} tabIndex={-1} className="font-display text-4xl leading-tight sm:text-5xl">{t.upload}</h1>
+            <div hidden={checking}>
             <p className="mt-6 leading-relaxed text-muted">{t.fileHelp}</p>
             <p className="mt-3 leading-relaxed text-muted">{t.readerHelp}</p>
             
@@ -239,11 +284,12 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            {uploadError && <p role="alert" className="mt-6 font-bold leading-relaxed">{translateMessage(uploadError, language)}</p>}
+            {uploadError && <div role="alert" className="recovery-panel mt-6"><p className="font-bold leading-relaxed">{translateMessage(uploadError, language)}</p><div className="mt-5 flex flex-wrap gap-3"><button type="button" className="primary-button" disabled={!jobOffer || !contract || checking} onClick={checkDocuments}>{t.retry}</button><button type="button" className="secondary-button" onClick={() => loadExample()}>{t.sample}</button></div></div>}
             <button type="button" onClick={checkDocuments} disabled={!jobOffer || !contract || checking} className="primary-button mt-8 w-full sm:w-auto">
               {checking ? t.reading : t.check}
             </button>
-            {checking && <p role="status" className="mt-4 leading-relaxed text-muted">{translateMessage(readingProgress, language)}</p>}
+            </div>
+            {checking && <ReadingScene language={language} phase={readingPhase} />}
             <div className="mt-10 border-t border-line pt-8">
               <p className="mb-4 leading-relaxed text-muted">{t.sampleIntro}</p>
               <button type="button" className="secondary-button w-full sm:w-auto" onClick={() => loadExample()}>

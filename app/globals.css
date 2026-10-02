@@ -198,3 +198,23 @@ input[type="file"]:focus-visible + p { outline: 3px solid var(--primary); }
   .comparison-card .value-half { padding-inline: 14px; }
   .card-quotes { padding-inline: 16px; }
 }
+
+.reading-scene { border-radius: 16px; padding: 28px 20px; background: var(--surface); box-shadow: var(--shadow); }
+.scan-documents { display: flex; direction: ltr; justify-content: center; gap: 28px; padding-top: 8px; }
+.scan-document { position: relative; overflow: hidden; width: 86px; height: 118px; border: 2px solid var(--primary); border-radius: 5px 16px 5px 5px; background: var(--surface); }
+.document-fold { position: absolute; top: 0; right: 0; width: 17px; height: 17px; border-bottom: 2px solid var(--primary); border-left: 2px solid var(--primary); background: var(--primary-soft); }
+.scan-text-line { position: absolute; inset-inline: 13px; height: 3px; border-radius: 2px; background: var(--primary); opacity: .16; animation: line-read 3.2s ease-in-out infinite; }
+.scan-text-line:nth-last-child(2) { right: 30px; }
+.scan-line { position: absolute; left: 5px; right: 5px; top: 22%; height: 5px; background: var(--primary-soft); border-bottom: 2px solid var(--primary); animation: document-scan 3.2s ease-in-out infinite; }
+.scan-document[data-document="1"] .scan-line { animation-delay: 1.6s; }
+.reading-progress { height: 6px; border-radius: 6px; background: var(--primary-soft); overflow: hidden; }
+.reading-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width 250ms ease; }
+.reading-steps { display: flex; justify-content: space-between; gap: 10px; font-size: 18px; }
+.reading-steps li { flex: 1; display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; color: var(--muted); }
+.stage-marker { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.reading-steps li[data-complete="true"] { color: var(--primary); }
+.reading-steps li[data-complete="true"] .stage-marker { background: var(--primary); }
+.recovery-panel { padding: 24px; border-radius: 12px; background: var(--different-soft); }
+@keyframes document-scan { 0%, 5% { top: 22%; opacity: 0; } 10% { opacity: .9; } 45% { top: 88%; opacity: .9; } 50%, 100% { top: 88%; opacity: 0; } }
+@keyframes line-read { 0%, 5% { opacity: .16; } 20%, 35% { opacity: .65; } 50%, 100% { opacity: .16; } }
+@media (prefers-reduced-motion: reduce) { .scan-line, .scan-text-line { animation: none; } .reading-progress > span { transition: none; } }
